@@ -961,16 +961,19 @@ body {
     
     
     <div>
+      
       <div class="nav-section-title">Locais</div>
       <div class="nav-group">
-        <button class="nav-btn" onclick="navigateTo('/')">
-          <svg class="svg-icon" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
-          Root
-        </button>
         <button class="nav-btn active" onclick="navigateTo('/workspace')">
           <svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
           Workspace
         </button>
+        <button class="nav-btn" onclick="navigateTo('/')">
+          <svg class="svg-icon" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+          <span style="flex:1">Sistema (Root)</span>
+          <svg class="svg-icon" viewBox="0 0 24 24" style="width:14px;height:14px;opacity:0.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        </button>
+
       </div>
     </div>
 
@@ -1196,7 +1199,7 @@ document.getElementById('loginForm').onsubmit = async (e) => {
     state.user = data.user;
 
     document.getElementById('loginScreen').classList.add('hidden');
-    loadFiles('/');
+    loadFiles('/workspace');
     loadStorage();
   } catch (ex) {
     err.textContent = ex.message;
@@ -1213,9 +1216,20 @@ document.getElementById('loginForm').onsubmit = async (e) => {
 // ============================================================================
 // FILE RENDERING
 // ============================================================================
+
 async function loadFiles(path) {
   state.currentPath = path;
   state.selected.clear();
+  
+  // Atualiza sidebar ativa
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.classList.remove('active');
+    const action = btn.getAttribute('onclick');
+    if (action && action.includes(`navigateTo('${path === '/' ? '/' : path}')`)) {
+      btn.classList.add('active');
+    }
+  });
+
   const container = document.getElementById('fileContainer');
   container.innerHTML = '<div class="empty-view"><p>Carregando...</p></div>';
 
@@ -1230,6 +1244,7 @@ async function loadFiles(path) {
     container.innerHTML = `<div class="empty-view"><h3 style="color:var(--system-red)">Erro</h4><p>${e.message}</p></div>`;
   }
 }
+
 
 function renderViewport(data) {
   const container = document.getElementById('fileContainer');
