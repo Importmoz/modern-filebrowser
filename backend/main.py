@@ -58,24 +58,33 @@ if os.path.exists(FRONTEND_DIR):
 
 def load_users():
     """Carrega usuários do arquivo JSON."""
+    default_users = {
+        "admin": {
+            "password": hashlib.sha256("admin".encode()).hexdigest(),
+            "name": "Administrador",
+            "role": "admin",
+            "scope": "/",
+            "created_at": datetime.datetime.now().isoformat()
+        }
+    }
     if not os.path.exists(USERS_FILE):
         os.makedirs(os.path.dirname(USERS_FILE), exist_ok=True)
-        # Usuário padrão
-        default_users = {
-            "admin": {
-                "password": hashlib.sha256("admin".encode()).hexdigest(),
-                "name": "Administrador",
-                "role": "admin",
-                "scope": "/",
-                "created_at": datetime.datetime.now().isoformat()
-            }
-        }
         with open(USERS_FILE, "w") as f:
             json.dump(default_users, f, indent=2)
         return default_users
     
-    with open(USERS_FILE, "r") as f:
-        return json.load(f)
+    try:
+        with open(USERS_FILE, "r") as f:
+            data = json.load(f)
+            if not data or not isinstance(data, dict):
+                raise ValueError("JSON de usuários inválido")
+            return data
+    except Exception as e:
+        # Se o arquivo estiver corrompido ou vazio, re-cria com o usuário admin padrão
+        print(f"⚠️ Erro ao ler {USERS_FILE} ({e}). Recriando com usuário admin...")
+        with open(USERS_FILE, "w") as f:
+            json.dump(default_users, f, indent=2)
+        return default_users
 
 def save_users(users):
     """Salva usuários no arquivo JSON."""
@@ -182,8 +191,23 @@ def get_file_icon(filename: str, is_dir: bool = False) -> str:
 # =============================================================================
 
 @app.post("/api/auth/login")
-async def login(username: str = Form(...), password: str = Form(...)):
-    """Login do usuário."""
+async def login(
+    request: Request,
+    username: Optional[str] = Form(None),
+    password: Optional[str] = Form(None)
+):
+    """Login do usuário (aceita JSON ou Form)."""
+    if not username or not password:
+        try:
+            body = await request.json()
+            username = username or body.get("username")
+            password = password or body.get("password")
+        except Exception:
+            pass
+
+    if not username or not password:
+        raise HTTPException(400, "Usuário e senha são obrigatórios")
+
     users = load_users()
     if username not in users or not verify_password(password, users[username]["password"]):
         raise HTTPException(401, "Usuário ou senha inválidos")

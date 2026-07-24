@@ -1078,11 +1078,19 @@ document.getElementById('loginForm').onsubmit = async (e) => {
   err.classList.remove('show');
 
   try {
-    const form = new FormData();
-    form.append('username', document.getElementById('loginUser').value);
-    form.append('password', document.getElementById('loginPass').value);
-    const res = await fetch(API + '/auth/login', { method: 'POST', body: form });
-    if (!res.ok) throw new Error('Falha no login');
+    const payload = {
+      username: document.getElementById('loginUser').value.trim(),
+      password: document.getElementById('loginPass').value
+    };
+    const res = await fetch(API + '/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(errData.detail || 'Usuário ou senha inválidos');
+    }
     const data = await res.json();
     state.token = data.token;
     state.user = data.user;

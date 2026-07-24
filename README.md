@@ -45,7 +45,7 @@ Acesse: **http://SEU_IP:8090**
 ## ☁️ Deploy no Coolify
 
 1. **New Resource → Docker Compose**
-2. Cole o conteúdo do `docker-compose.yml`
+2. Cole o conteúdo do `docker-compose.yaml`
 3. Configure:
    - `ROOT_PATH`: diretório a gerenciar
    - `PORT`: 8090
@@ -74,7 +74,7 @@ modern-filebrowser/
 ├── frontend/
 │   └── index.html           # SPA moderno dark/glass
 ├── Dockerfile
-├── docker-compose.yml
+├── docker-compose.yaml
 ├── .env.example
 └── README.md
 ```
