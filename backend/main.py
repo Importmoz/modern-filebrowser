@@ -47,11 +47,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve frontend static files
-FRONTEND_DIR = os.environ.get("FRONTEND_DIR", os.path.join(os.path.dirname(__file__), "..", "frontend"))
-if os.path.exists(FRONTEND_DIR):
-    app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
-
 # =============================================================================
 # Utilitários
 # =============================================================================
@@ -788,6 +783,14 @@ async def storage_info(current_user: dict = Depends(get_current_user)):
         }
     except:
         return {"total": 0, "used": 0, "free": 0, "error": "Não foi possível obter informações do disco"}
+
+# =============================================================================
+# Frontend Static Files (deve ser montado APÓS todas as rotas da API)
+# =============================================================================
+
+FRONTEND_DIR = os.environ.get("FRONTEND_DIR", os.path.join(os.path.dirname(__file__), "..", "frontend"))
+if os.path.exists(FRONTEND_DIR):
+    app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
 
 # =============================================================================
 # Inicialização
