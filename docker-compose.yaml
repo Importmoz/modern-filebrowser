@@ -10,7 +10,7 @@ services:
     ports:
       - "${PORT:-8090}:8090"
     volumes:
-      - "${ROOT_PATH:-/mnt/storage}:/data:rw"
+      - "${ROOT_PATH:-/}:/data:rw"
       - ./data:/app/data
     environment:
       - ROOT_PATH=/data

@@ -248,32 +248,56 @@ async def list_files(
     items = []
     
     try:
-        entries = sorted(full_path.iterdir(), key=lambda x: (not x.is_dir(), x.name.lower()))
+        raw_entries = list(full_path.iterdir())
+        entries = sorted(raw_entries, key=lambda x: (not (x.is_dir() if hasattr(x, 'is_dir') else False), x.name.lower()))
     except PermissionError:
         raise HTTPException(403, "Permissão negada ao ler diretório")
+    except Exception as e:
+        raise HTTPException(500, f"Erro ao acessar diretório: {str(e)}")
     
     for entry in entries:
-        # Pula arquivos ocultos
-        if entry.name.startswith(".") and entry.name not in [".", ".."]:
+        try:
+            # Pula arquivos ocultos de sistema (.trash etc.)
+            if entry.name.startswith(".") and entry.name not in [".", ".."]:
+                continue
+            
+            is_dir = False
+            try:
+                is_dir = entry.is_dir()
+            except Exception:
+                pass
+            
+            stat_size = 0
+            stat_mtime = 0
+            try:
+                stat = entry.stat()
+                stat_size = stat.st_size
+                stat_mtime = stat.st_mtime
+            except Exception:
+                pass
+            
+            # Filtro de busca (opcional)
+            if search and search.lower() not in entry.name.lower():
+                continue
+            
+            try:
+                rel = str(entry.relative_to(ROOT_PATH))
+                rel_path = "/" + rel.lstrip("/") if rel != "." else "/"
+            except Exception:
+                rel_path = "/" + entry.name
+            
+            items.append({
+                "name": entry.name,
+                "path": rel_path,
+                "is_dir": is_dir,
+                "size": stat_size if not is_dir else 0,
+                "size_formatted": format_size(stat_size) if not is_dir else "",
+                "modified": datetime.datetime.fromtimestamp(stat_mtime).isoformat() if stat_mtime else "",
+                "icon": get_file_icon(entry.name, is_dir),
+                "extension": Path(entry.name).suffix.lower() if not is_dir else "",
+            })
+        except Exception:
             continue
-        
-        is_dir = entry.is_dir()
-        stat = entry.stat()
-        
-        # Filtro de busca (opcional)
-        if search and search.lower() not in entry.name.lower():
-            continue
-        
-        items.append({
-            "name": entry.name,
-            "path": str(entry.relative_to(ROOT_PATH)) if entry.relative_to(ROOT_PATH) != Path(".") else "/",
-            "is_dir": is_dir,
-            "size": stat.st_size if not is_dir else 0,
-            "size_formatted": format_size(stat.st_size) if not is_dir else "",
-            "modified": datetime.datetime.fromtimestamp(stat.st_mtime).isoformat(),
-            "icon": get_file_icon(entry.name, is_dir),
-            "extension": Path(entry.name).suffix.lower() if not is_dir else "",
-        })
     
     # Informações do diretório atual
     breadcrumbs = []
