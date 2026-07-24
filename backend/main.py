@@ -599,23 +599,18 @@ async def preview_file(
     if not full_path.exists() or not full_path.is_file():
         raise HTTPException(404, "Arquivo não encontrado")
     
-    # Apenas arquivos de texto
-    text_extensions = {".txt", ".md", ".json", ".xml", ".yaml", ".yml", ".py", ".js",
-                       ".ts", ".html", ".css", ".sh", ".log", ".csv", ".env", ".ini",
-                       ".cfg", ".conf", ".toml", ".sql", ".php", ".rb", ".go", ".rs",
-                       ".java", ".c", ".cpp", ".h", ".hpp", ".vue", ".svelte", ".jsx",
-                       ".tsx", ".bat", ".ps1", ".lua", ".r", ".swift", ".kt", ".dart"}
-    
-    ext = full_path.suffix.lower()
-    if ext not in text_extensions:
-        # Verifica se é mime text
-        mime, _ = mimetypes.guess_type(str(full_path))
-        if not mime or not mime.startswith("text/"):
-            raise HTTPException(400, "Tipo de arquivo não suportado para preview")
-    
     try:
+        # Tenta verificar se é um arquivo binário checando nulos iniciais
+        with open(full_path, 'rb') as f:
+            chunk = f.read(4096)
+            if b'\0' in chunk:
+                raise HTTPException(400, "Arquivo binário")
+                
         content = full_path.read_text(encoding="utf-8", errors="replace")
+        ext = full_path.suffix.lower()
         return {"content": content, "name": full_path.name, "language": ext.lstrip(".") or "text"}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(500, f"Erro ao ler arquivo: {str(e)}")
 
