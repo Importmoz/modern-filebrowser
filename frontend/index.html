@@ -3,62 +3,57 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NovaDrive — Files</title>
+<title>NovaDrive</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ============================================================================
-   APPLE FILES DESIGN SYSTEM
+   NOVA DESIGN SYSTEM - FLUID, CURVED, ANIMATED
    ============================================================================ */
 :root {
-  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 
-  /* Color Palette - Apple Dark Glass */
-  --bg-app: #0d0e12;
-  --bg-sidebar: rgba(18, 20, 29, 0.75);
-  --bg-main: rgba(13, 14, 18, 0.6);
-  --bg-card: rgba(255, 255, 255, 0.035);
-  --bg-card-hover: rgba(255, 255, 255, 0.07);
-  --bg-card-active: rgba(255, 255, 255, 0.1);
-  --bg-glass: rgba(255, 255, 255, 0.03);
-  --bg-glass-heavy: rgba(22, 24, 34, 0.85);
+  /* Color Palette - Deep Dark Glass */
+  --bg-app: #08080b;
+  --bg-sidebar: rgba(14, 15, 20, 0.65);
+  --bg-main: rgba(10, 11, 15, 0.5);
+  --bg-card: rgba(255, 255, 255, 0.025);
+  --bg-card-hover: rgba(255, 255, 255, 0.06);
+  --bg-card-active: rgba(255, 255, 255, 0.09);
 
-  --border: rgba(255, 255, 255, 0.08);
-  --border-subtle: rgba(255, 255, 255, 0.04);
-  --border-focus: rgba(10, 132, 255, 0.5);
+  --border: rgba(255, 255, 255, 0.06);
+  --border-subtle: rgba(255, 255, 255, 0.03);
 
-  --text-primary: #f2f2f7;
-  --text-secondary: #8e8e93;
-  --text-tertiary: #636366;
-  --text-quaternary: #48484a;
+  --text-primary: #ffffff;
+  --text-secondary: #9ca3af;
+  --text-tertiary: #6b7280;
 
-  /* Apple System Colors */
-  --system-blue: #0a84ff;
-  --system-blue-glow: rgba(10, 132, 255, 0.25);
-  --system-purple: #5e5ce6;
-  --system-green: #30d158;
-  --system-red: #ff453a;
-  --system-orange: #ff9f0a;
-  --system-yellow: #ffd60a;
+  /* Brand Colors */
+  --accent: #8b5cf6;
+  --accent-hover: #a78bfa;
+  --accent-glow: rgba(139, 92, 246, 0.3);
+  --accent-soft: rgba(139, 92, 246, 0.1);
+  
+  --system-red: #ef4444;
+  --system-green: #10b981;
+  --system-blue: #3b82f6;
 
-  --accent: var(--system-blue);
-  --accent-gradient: linear-gradient(135deg, #0a84ff 0%, #5e5ce6 100%);
-  --accent-soft: rgba(10, 132, 255, 0.12);
+  /* Ultra Curved Radii */
+  --radius-xs: 12px;
+  --radius-sm: 18px;
+  --radius-md: 24px;
+  --radius-lg: 32px;
+  --radius-xl: 40px;
+  --radius-full: 999px;
 
-  --radius-xs: 6px;
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
-  --radius-full: 9999px;
+  --shadow-float: 0 10px 30px -10px rgba(0,0,0,0.5);
+  --shadow-glow: 0 0 20px rgba(139, 92, 246, 0.2);
 
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
-
-  --blur-glass: blur(30px) saturate(180%);
-  --transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  --blur: blur(40px) saturate(200%);
+  --transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  --bounce: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 * { margin:0; padding:0; box-sizing:border-box; -webkit-font-smoothing: antialiased; }
@@ -82,39 +77,46 @@ body {
 }
 .bg-glow-1 {
   position: absolute;
-  top: -10%; left: -10%;
-  width: 50vw; height: 50vw;
-  background: radial-gradient(circle, rgba(10, 132, 255, 0.08) 0%, transparent 70%);
-  filter: blur(80px);
+  top: -20%; left: -10%;
+  width: 60vw; height: 60vw;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 60%);
+  filter: blur(100px);
+  animation: pulseGlow 15s ease-in-out infinite alternate;
 }
 .bg-glow-2 {
   position: absolute;
-  bottom: -10%; right: -10%;
+  bottom: -20%; right: -10%;
   width: 50vw; height: 50vw;
-  background: radial-gradient(circle, rgba(94, 92, 230, 0.06) 0%, transparent 70%);
-  filter: blur(80px);
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 60%);
+  filter: blur(100px);
+  animation: pulseGlow 20s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes pulseGlow {
+  0% { transform: scale(0.9) translate(0, 0); opacity: 0.7; }
+  100% { transform: scale(1.1) translate(5%, 5%); opacity: 1; }
 }
 
 /* ============================================================================
    SVG ICON SYSTEM
    ============================================================================ */
 .svg-icon {
-  width: 18px;
-  height: 18px;
-  stroke-width: 1.8;
+  width: 20px;
+  height: 20px;
+  stroke-width: 2;
   stroke: currentColor;
   fill: none;
   stroke-linecap: round;
   stroke-linejoin: round;
   display: inline-block;
   vertical-align: middle;
-  flex-shrink: 0;
+  transition: var(--bounce);
 }
-.svg-icon.lg { width: 24px; height: 24px; }
-.svg-icon.xl { width: 44px; height: 44px; }
+.svg-icon.lg { width: 26px; height: 26px; }
+.svg-icon.xl { width: 48px; height: 48px; }
 
 /* ============================================================================
-   LOGIN SCREEN (APPLE STYLE)
+   LOGIN SCREEN
    ============================================================================ */
 .login-wrapper {
   position: fixed;
@@ -123,127 +125,138 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(13, 14, 18, 0.95);
-  backdrop-filter: var(--blur-glass);
-  transition: opacity 0.4s ease, transform 0.4s ease;
+  background: rgba(8, 8, 11, 0.95);
+  backdrop-filter: var(--blur);
+  transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .login-wrapper.hidden {
   opacity: 0;
   pointer-events: none;
-  transform: scale(1.02);
+  transform: scale(1.05);
 }
 
 .login-card {
-  width: 380px;
-  padding: 40px;
+  width: 400px;
+  padding: 48px 40px;
   background: var(--bg-sidebar);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-float);
   text-align: center;
   position: relative;
   overflow: hidden;
+  animation: floatUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
-.login-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: var(--accent-gradient);
+
+@keyframes floatUp {
+  0% { opacity: 0; transform: translateY(40px) scale(0.95); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .login-brand {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 60px; height: 60px;
-  border-radius: 16px;
+  width: 72px; height: 72px;
+  border-radius: var(--radius-md);
   background: var(--accent-soft);
   color: var(--accent);
-  margin-bottom: 20px;
-  border: 1px solid rgba(10, 132, 255, 0.2);
+  margin-bottom: 24px;
+  border: 1px solid var(--accent-glow);
+  box-shadow: var(--shadow-glow);
+}
+.login-brand svg { animation: floatIcon 3s ease-in-out infinite; }
+
+@keyframes floatIcon {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
 }
 
 .login-card h1 {
-  font-size: 22px;
-  font-weight: 700;
+  font-size: 26px;
+  font-weight: 800;
   letter-spacing: -0.5px;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 .login-card p {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-secondary);
-  margin-bottom: 28px;
+  margin-bottom: 32px;
 }
 
 .field {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   text-align: left;
 }
 .field label {
   display: block;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  padding-left: 4px;
 }
 .field input {
   width: 100%;
-  padding: 12px 14px;
-  background: rgba(255, 255, 255, 0.05);
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-full);
   color: var(--text-primary);
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: 15px;
   outline: none;
-  transition: var(--transition);
+  transition: var(--bounce);
 }
 .field input:focus {
   border-color: var(--accent);
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 0 3px var(--system-blue-glow);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+  transform: scale(1.02);
 }
 
-.btn-apple {
+.btn-primary {
   width: 100%;
-  padding: 12px;
+  padding: 16px;
   background: var(--accent);
   color: #fff;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-full);
   font-family: var(--font-sans);
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   cursor: pointer;
-  transition: var(--transition);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 8px;
+  transition: var(--bounce);
+  margin-top: 12px;
 }
-.btn-apple:hover {
-  background: #0071e3;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px var(--system-blue-glow);
+.btn-primary:hover {
+  background: var(--accent-hover);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: var(--shadow-glow);
 }
-.btn-apple:active { transform: translateY(0); }
+.btn-primary:active { transform: translateY(1px) scale(0.98); }
 
 .login-err {
-  margin-top: 14px;
-  padding: 10px;
-  background: rgba(255, 69, 58, 0.1);
-  border: 1px solid rgba(255, 69, 58, 0.2);
-  border-radius: var(--radius-xs);
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-full);
   color: var(--system-red);
-  font-size: 12px;
+  font-size: 13px;
   display: none;
+  animation: shake 0.4s ease-in-out;
 }
 .login-err.show { display: block; }
 
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
 /* ============================================================================
-   APP LAYOUT (APPLE FINDER STYLE)
+   APP LAYOUT
    ============================================================================ */
 .app-container {
   display: flex;
@@ -255,101 +268,102 @@ body {
 
 /* SIDEBAR */
 .sidebar {
-  width: 250px;
-  min-width: 250px;
+  width: 280px;
+  min-width: 280px;
   background: var(--bg-sidebar);
-  backdrop-filter: var(--blur-glass);
+  backdrop-filter: var(--blur);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  padding: 16px 12px;
-  gap: 20px;
+  padding: 24px 16px;
+  gap: 24px;
 }
 
-/* Window Traffic Lights (Apple style) */
-.window-controls {
+.brand-title {
+  font-size: 20px;
+  font-weight: 800;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 8px 12px;
+  gap: 12px;
+  padding: 0 12px 12px;
+  color: var(--text-primary);
 }
-.traffic-dot {
-  width: 12px; height: 12px;
-  border-radius: 50%;
-}
-.traffic-close { background: #ff5f56; border: 1px solid #e0443e; }
-.traffic-min { background: #ffbd2e; border: 1px solid #dea123; }
-.traffic-max { background: #27c93f; border: 1px solid #1aab29; }
+.brand-title .svg-icon { color: var(--accent); }
 
 .nav-section-title {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
+  letter-spacing: 1px;
   color: var(--text-tertiary);
-  padding: 0 10px 6px;
+  padding: 0 12px 8px;
 }
 
 .nav-group {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .nav-btn {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: var(--radius-xs);
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
   color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 500;
-  background: none;
+  font-size: 14px;
+  font-weight: 600;
+  background: transparent;
   border: none;
   cursor: pointer;
-  transition: var(--transition);
+  transition: var(--bounce);
   width: 100%;
   text-align: left;
 }
 .nav-btn:hover {
   background: var(--bg-card-hover);
   color: var(--text-primary);
+  transform: translateX(4px);
 }
 .nav-btn.active {
   background: var(--accent-soft);
   color: var(--accent);
-  font-weight: 600;
 }
-.nav-btn .svg-icon { color: inherit; }
+.nav-btn:hover .svg-icon { transform: scale(1.15) rotate(-5deg); }
 
 .sidebar-spacer { flex: 1; }
 
 .storage-widget {
-  padding: 12px;
+  padding: 16px;
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
+  transition: var(--bounce);
+}
+.storage-widget:hover {
+  background: var(--bg-card-hover);
+  transform: translateY(-2px);
 }
 .storage-info {
   display: flex;
   justify-content: space-between;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-secondary);
-  margin-bottom: 8px;
-  font-weight: 500;
+  margin-bottom: 12px;
+  font-weight: 600;
 }
 .storage-track {
-  height: 5px;
-  background: rgba(255, 255, 255, 0.08);
+  height: 6px;
+  background: rgba(255, 255, 255, 0.06);
   border-radius: var(--radius-full);
   overflow: hidden;
 }
 .storage-fill {
   height: 100%;
-  background: var(--accent-gradient);
+  background: var(--accent);
   border-radius: var(--radius-full);
-  transition: width 0.4s ease;
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* MAIN CONTENT AREA */
@@ -363,28 +377,28 @@ body {
 
 /* TOP TOOLBAR */
 .toolbar {
-  height: 56px;
-  padding: 0 20px;
+  height: 72px;
+  padding: 0 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--border);
-  background: rgba(18, 20, 29, 0.4);
-  backdrop-filter: var(--blur-glass);
-  gap: 16px;
+  background: rgba(10, 11, 15, 0.4);
+  backdrop-filter: var(--blur);
+  gap: 20px;
 }
 
 .toolbar-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   flex: 1;
   min-width: 0;
 }
 
 .btn-icon-soft {
-  width: 32px; height: 32px;
-  border-radius: var(--radius-xs);
+  width: 40px; height: 40px;
+  border-radius: var(--radius-full);
   border: 1px solid var(--border);
   background: var(--bg-card);
   color: var(--text-secondary);
@@ -392,32 +406,37 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: var(--transition);
+  transition: var(--bounce);
 }
 .btn-icon-soft:hover {
   background: var(--bg-card-hover);
   color: var(--text-primary);
-  border-color: var(--border);
+  transform: scale(1.05);
 }
 
-/* Apple Pill Breadcrumb */
+/* Curved Pill Breadcrumb */
 .breadcrumb-trail {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   overflow-x: auto;
   scrollbar-width: none;
+  background: var(--bg-card);
+  padding: 6px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
 }
 .breadcrumb-item {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 10px;
-  border-radius: var(--radius-xs);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
   font-size: 13px;
+  font-weight: 500;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: var(--transition);
+  transition: var(--bounce);
   white-space: nowrap;
 }
 .breadcrumb-item:hover {
@@ -425,215 +444,221 @@ body {
   color: var(--text-primary);
 }
 .breadcrumb-item.active {
+  background: var(--bg-card-active);
   color: var(--text-primary);
-  font-weight: 600;
+  font-weight: 700;
 }
 .breadcrumb-sep {
   color: var(--text-tertiary);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .toolbar-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 /* Search Input */
 .search-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  background: rgba(255, 255, 255, 0.05);
+  gap: 10px;
+  padding: 8px 16px;
+  background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  width: 200px;
-  transition: var(--transition);
+  border-radius: var(--radius-full);
+  width: 220px;
+  transition: var(--bounce);
 }
 .search-bar:focus-within {
-  width: 260px;
+  width: 280px;
   border-color: var(--accent);
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 0 3px var(--system-blue-glow);
+  background: var(--bg-card-hover);
+  box-shadow: 0 0 0 4px var(--accent-soft);
 }
 .search-bar input {
   background: none;
   border: none;
   outline: none;
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 14px;
   width: 100%;
   font-family: var(--font-sans);
 }
 .search-bar input::placeholder { color: var(--text-tertiary); }
+.search-bar .svg-icon { color: var(--text-secondary); }
 
 /* View Mode Segmented Control */
 .segmented-control {
   display: flex;
-  padding: 2px;
-  background: rgba(255, 255, 255, 0.05);
+  padding: 4px;
+  background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-full);
 }
 .segmented-btn {
-  padding: 5px 10px;
-  border-radius: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
   border: none;
   background: none;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: var(--transition);
+  transition: var(--bounce);
   display: flex;
   align-items: center;
 }
 .segmented-btn.active {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-}
-
-.btn-action-primary {
-  padding: 7px 14px;
-  background: var(--accent);
-  color: white;
-  border: none;
-  border-radius: var(--radius-sm);
-  font-size: 13px;
-  font-weight: 600;
-  font-family: var(--font-sans);
-  cursor: pointer;
-  transition: var(--transition);
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.btn-action-primary:hover {
-  background: #0071e3;
-  box-shadow: 0 2px 10px var(--system-blue-glow);
 }
 
 /* FILE VIEWPORT */
 .viewport {
   flex: 1;
   overflow-y: auto;
-  padding: 24px;
+  padding: 32px;
   position: relative;
 }
 
 /* Grid View */
 .file-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 20px;
 }
 
 .grid-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 16px 10px 12px;
+  padding: 24px 12px 16px;
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: var(--transition);
+  transition: var(--bounce);
   position: relative;
   text-align: center;
+  animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.9) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
 .grid-card:hover {
   background: var(--bg-card-hover);
   border-color: var(--border);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: var(--shadow-float);
 }
 .grid-card.selected {
   background: var(--accent-soft);
   border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent);
+  box-shadow: 0 0 0 2px var(--accent);
 }
 
 .grid-card .icon-wrapper {
-  width: 56px; height: 56px;
+  width: 64px; height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 10px;
+  margin-bottom: 16px;
   border-radius: var(--radius-sm);
-  transition: var(--transition);
+  transition: var(--bounce);
 }
-.grid-card .icon-wrapper.folder { color: #5eb0ff; }
-.grid-card .icon-wrapper.image { color: #ff9f0a; }
-.grid-card .icon-wrapper.video { color: #ff3b30; }
-.grid-card .icon-wrapper.audio { color: #30d158; }
-.grid-card .icon-wrapper.document { color: #64d2ff; }
-.grid-card .icon-wrapper.code { color: #bf5af2; }
-.grid-card .icon-wrapper.archive { color: #ffd60a; }
+.grid-card:hover .icon-wrapper {
+  transform: scale(1.1);
+}
+
+.grid-card .icon-wrapper.folder { color: #3b82f6; }
+.grid-card .icon-wrapper.image { color: #f59e0b; }
+.grid-card .icon-wrapper.video { color: #ef4444; }
+.grid-card .icon-wrapper.audio { color: #10b981; }
+.grid-card .icon-wrapper.document { color: #0ea5e9; }
+.grid-card .icon-wrapper.code { color: #8b5cf6; }
+.grid-card .icon-wrapper.archive { color: #eab308; }
 .grid-card .icon-wrapper.file { color: var(--text-secondary); }
 
 .grid-card .title {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--text-primary);
   width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  padding: 0 4px;
+  padding: 0 8px;
 }
 .grid-card .meta {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-tertiary);
-  margin-top: 3px;
+  margin-top: 4px;
 }
 
 /* List View */
 .file-list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
 }
 .list-header {
   display: grid;
-  grid-template-columns: 2fr 1fr 1.2fr 40px;
-  padding: 8px 16px;
-  font-size: 11px;
+  grid-template-columns: 2fr 1fr 1.2fr 60px;
+  padding: 12px 20px;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.6px;
+  letter-spacing: 1px;
   color: var(--text-tertiary);
   border-bottom: 1px solid var(--border);
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 .list-row {
   display: grid;
-  grid-template-columns: 2fr 1fr 1.2fr 40px;
+  grid-template-columns: 2fr 1fr 1.2fr 60px;
   align-items: center;
-  padding: 10px 16px;
-  border-radius: var(--radius-xs);
+  padding: 12px 20px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: var(--transition);
+  transition: var(--bounce);
+  background: var(--bg-card);
+  border: 1px solid transparent;
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
-.list-row:hover { background: var(--bg-card-hover); }
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.list-row:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-subtle);
+  transform: translateX(4px);
+}
 .list-row.selected {
   background: var(--accent-soft);
+  border-color: var(--accent);
 }
 .list-row .name-col {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   min-width: 0;
 }
 .list-row .name-text {
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .list-row .size-col, .list-row .date-col {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-secondary);
 }
 
@@ -643,202 +668,254 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 100px 20px;
+  padding: 120px 20px;
   color: var(--text-tertiary);
   text-align: center;
+  animation: popIn 0.5s ease;
+}
+.empty-view .svg-icon {
+  margin-bottom: 16px;
+  opacity: 0.5;
 }
 .empty-view h3 {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  margin-top: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
 }
-.empty-view p { font-size: 13px; margin-top: 4px; }
+.empty-view p { font-size: 14px; }
 
 /* Drag Overlay */
 .drop-zone-overlay {
   position: absolute;
-  inset: 12px;
+  inset: 16px;
   border: 2px dashed var(--accent);
-  background: var(--accent-soft);
-  border-radius: var(--radius-md);
+  background: rgba(139, 92, 246, 0.1);
+  border-radius: var(--radius-lg);
   display: none;
   align-items: center;
   justify-content: center;
   z-index: 50;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(8px);
 }
-.drop-zone-overlay.active { display: flex; }
+.drop-zone-overlay.active { display: flex; animation: fadeIn 0.3s; }
 .drop-zone-overlay .box {
   background: var(--bg-sidebar);
-  padding: 20px 40px;
-  border-radius: var(--radius-md);
+  padding: 32px 48px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   text-align: center;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-float);
+  transform: scale(1.1);
+  animation: pulseBox 2s infinite alternate;
 }
+
+@keyframes pulseBox {
+  from { transform: scale(1); box-shadow: var(--shadow-float); }
+  to { transform: scale(1.05); box-shadow: var(--shadow-glow); }
+}
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
 
 /* ============================================================================
-   CONTEXT MENU (MAC OS FINDER STYLE)
+   CONTEXT MENU (NOVA STYLE)
    ============================================================================ */
-.apple-menu {
+.nova-menu {
   position: fixed;
   z-index: 2000;
-  background: rgba(26, 29, 41, 0.9);
-  backdrop-filter: var(--blur-glass);
+  background: rgba(20, 21, 28, 0.95);
+  backdrop-filter: var(--blur);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 5px;
-  min-width: 180px;
-  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-md);
+  padding: 8px;
+  min-width: 200px;
+  box-shadow: var(--shadow-float);
   display: none;
+  transform-origin: top left;
+  animation: menuIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.apple-menu.show { display: block; }
+.nova-menu.show { display: block; }
 
-.apple-menu-item {
+@keyframes menuIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.nova-menu-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 7px 10px;
-  border-radius: 6px;
+  padding: 10px 14px;
+  border-radius: var(--radius-xs);
   font-size: 13px;
+  font-weight: 600;
   color: var(--text-primary);
   cursor: pointer;
-  transition: var(--transition);
+  transition: var(--bounce);
   border: none;
   background: none;
   width: 100%;
   text-align: left;
 }
-.apple-menu-item:hover {
-  background: var(--accent);
-  color: #fff;
+.nova-menu-item:hover {
+  background: var(--bg-card-hover);
+  transform: translateX(4px);
+  color: var(--text-primary);
 }
-.apple-menu-item.danger:hover {
-  background: var(--system-red);
-  color: #fff;
+.nova-menu-item.danger:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--system-red);
 }
-.apple-menu-sep {
+.nova-menu-sep {
   height: 1px;
   background: var(--border);
-  margin: 4px 6px;
+  margin: 6px 8px;
 }
 
 /* ============================================================================
-   MODAL & QUICKLOOK
+   MODAL
    ============================================================================ */
 .modal-backdrop {
   position: fixed;
   inset: 0;
   z-index: 3000;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(12px);
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(16px);
   display: none;
   align-items: center;
   justify-content: center;
 }
 .modal-backdrop.show { display: flex; }
 
-.apple-modal {
+.nova-modal {
   background: var(--bg-sidebar);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  width: 480px;
-  max-width: 92vw;
+  border-radius: var(--radius-xl);
+  width: 500px;
+  max-width: 90vw;
   max-height: 85vh;
   overflow: hidden;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-float);
   display: flex;
   flex-direction: column;
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .modal-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  padding: 24px 32px 16px;
+  border-bottom: 1px solid var(--border-subtle);
 }
-.modal-header h3 { font-size: 15px; font-weight: 600; }
+.modal-header h3 { font-size: 18px; font-weight: 800; }
 
 .modal-body {
-  padding: 20px;
+  padding: 24px 32px;
   overflow-y: auto;
   flex: 1;
 }
 
 .modal-footer {
-  padding: 14px 20px;
-  border-top: 1px solid var(--border);
+  padding: 20px 32px;
+  border-top: 1px solid var(--border-subtle);
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 12px;
   background: rgba(0, 0, 0, 0.2);
 }
 
 .btn-secondary {
-  padding: 8px 16px;
-  background: var(--bg-card-hover);
+  padding: 12px 24px;
+  background: var(--bg-card);
   color: var(--text-primary);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xs);
-  font-size: 13px;
-  font-weight: 500;
+  border-radius: var(--radius-full);
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
+  transition: var(--bounce);
 }
-.btn-secondary:hover { background: rgba(255,255,255,0.12); }
+.btn-secondary:hover { 
+  background: var(--bg-card-hover); 
+  transform: translateY(-2px);
+}
 
-/* QuickLook Editor */
+.btn-primary-sm {
+  padding: 12px 24px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--bounce);
+}
+.btn-primary-sm:hover {
+  background: var(--accent-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
+.btn-danger-sm {
+  background: var(--system-red);
+}
+.btn-danger-sm:hover {
+  background: #f87171;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+}
+
+/* Editor */
 .code-editor {
   width: 100%;
-  min-height: 280px;
-  background: #08090c;
+  min-height: 320px;
+  background: #040405;
   border: 1px solid var(--border);
-  border-radius: var(--radius-xs);
-  padding: 14px;
-  color: #e6edf3;
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  color: #e2e8f0;
   font-family: var(--font-mono);
-  font-size: 12px;
-  line-height: 1.5;
+  font-size: 13px;
+  line-height: 1.6;
   resize: vertical;
   outline: none;
+  transition: border 0.3s;
+}
+.code-editor:focus {
+  border-color: var(--accent);
 }
 
-/* Toast */
+/* Toasts */
 .toast-rack {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  bottom: 24px;
+  right: 24px;
   z-index: 4000;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
-.apple-toast {
-  padding: 10px 18px;
-  background: rgba(28, 30, 43, 0.95);
+.nova-toast {
+  padding: 14px 24px;
+  background: rgba(20, 21, 28, 0.95);
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
   backdrop-filter: blur(20px);
   color: var(--text-primary);
-  font-size: 13px;
-  font-weight: 500;
-  box-shadow: var(--shadow-md);
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: var(--shadow-float);
   display: flex;
   align-items: center;
-  gap: 8px;
-  animation: toastSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  gap: 10px;
+  animation: toastSlide 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 @keyframes toastSlide {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from { transform: translateX(100%) scale(0.9); opacity: 0; }
+  to { transform: translateX(0) scale(1); opacity: 1; }
 }
 
 @media (max-width: 768px) {
   .sidebar { display: none; }
-  .toolbar { padding: 0 12px; }
-  .search-bar { width: 130px; }
-  .search-bar:focus-within { width: 160px; }
+  .toolbar { padding: 0 16px; height: 64px; }
+  .search-bar { width: 140px; }
+  .search-bar:focus-within { width: 180px; }
 }
 </style>
 </head>
@@ -849,49 +926,44 @@ body {
   <div class="bg-glow-2"></div>
 </div>
 
-<!-- ========================================================================
-     LOGIN
-     ======================================================================== -->
+<!-- LOGIN -->
 <div class="login-wrapper" id="loginScreen">
   <div class="login-card">
     <div class="login-brand">
       <svg class="svg-icon xl" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
     </div>
     <h1>NovaDrive</h1>
-    <p>Acesse seus arquivos com facilidade</p>
+    <p>Modern File Manager</p>
     <form id="loginForm">
       <div class="field">
-        <label>Usuário</label>
+        <label>Username</label>
         <input type="text" id="loginUser" value="admin" required autocomplete="username">
       </div>
       <div class="field">
-        <label>Senha</label>
+        <label>Password</label>
         <input type="password" id="loginPass" value="admin" required autocomplete="current-password">
       </div>
-      <button type="submit" class="btn-apple" id="loginBtn">Entrar</button>
+      <button type="submit" class="btn-primary" id="loginBtn">Entrar no Drive</button>
       <div class="login-err" id="loginErr"></div>
     </form>
   </div>
 </div>
 
-<!-- ========================================================================
-     APP LAYOUT
-     ======================================================================== -->
+<!-- APP -->
 <div class="app-container">
   <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="window-controls">
-      <div class="traffic-dot traffic-close"></div>
-      <div class="traffic-dot traffic-min"></div>
-      <div class="traffic-dot traffic-max"></div>
+    <div class="brand-title">
+      <svg class="svg-icon lg" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+      NovaDrive
     </div>
 
     <div>
-      <div class="nav-section-title">Locais</div>
+      <div class="nav-section-title">Navigation</div>
       <div class="nav-group">
         <button class="nav-btn active" onclick="navigateTo('/')">
-          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-          Todos os Arquivos
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+          Home
         </button>
         <button class="nav-btn" onclick="navigateTo('/.trash')">
           <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
@@ -901,7 +973,7 @@ body {
     </div>
 
     <div>
-      <div class="nav-section-title">Ações</div>
+      <div class="nav-section-title">Quick Actions</div>
       <div class="nav-group">
         <button class="nav-btn" onclick="promptFolder()">
           <svg class="svg-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -909,7 +981,7 @@ body {
         </button>
         <button class="nav-btn" onclick="openUploadModal()">
           <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-          Upload
+          Fazer Upload
         </button>
       </div>
     </div>
@@ -918,7 +990,7 @@ body {
 
     <div class="storage-widget">
       <div class="storage-info">
-        <span>Disco</span>
+        <span>Storage</span>
         <span id="storageLabel">—</span>
       </div>
       <div class="storage-track">
@@ -927,7 +999,7 @@ body {
     </div>
   </aside>
 
-  <!-- MAIN CONTENT AREA -->
+  <!-- MAIN -->
   <main class="content-area">
     <!-- TOOLBAR -->
     <header class="toolbar">
@@ -938,7 +1010,7 @@ body {
         <div class="breadcrumb-trail" id="breadcrumbTrail">
           <div class="breadcrumb-item active" onclick="navigateTo('/')">
             <svg class="svg-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-            Início
+            Root
           </div>
         </div>
       </div>
@@ -946,20 +1018,19 @@ body {
       <div class="toolbar-right">
         <div class="search-bar">
           <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          <input type="text" placeholder="Buscar..." oninput="handleSearch(this.value)">
+          <input type="text" placeholder="Buscar arquivos..." oninput="handleSearch(this.value)">
         </div>
 
         <div class="segmented-control">
           <button class="segmented-btn active" id="btnGrid" onclick="setView('grid')">
-            <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"></rect><rect x="14" y="3" width="7" height="7" rx="2"></rect><rect x="14" y="14" width="7" height="7" rx="2"></rect><rect x="3" y="14" width="7" height="7" rx="2"></rect></svg>
           </button>
           <button class="segmented-btn" id="btnList" onclick="setView('list')">
             <svg class="svg-icon" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
           </button>
         </div>
 
-        <button class="btn-action-primary" onclick="openUploadModal()">
-          <svg class="svg-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <button class="btn-primary-sm" style="margin:0;padding:8px 16px" onclick="openUploadModal()">
           Upload
         </button>
       </div>
@@ -973,8 +1044,8 @@ body {
       
       <div class="drop-zone-overlay" id="dropOverlay">
         <div class="box">
-          <svg class="svg-icon xl" viewBox="0 0 24 24" style="color:var(--accent)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-          <p style="margin-top:10px;font-weight:600">Solte os arquivos para fazer upload</p>
+          <svg class="svg-icon xl" viewBox="0 0 24 24" style="color:var(--accent);margin-bottom:16px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          <h2 style="font-weight:800;font-size:22px">Solte para Enviar</h2>
         </div>
       </div>
 
@@ -983,37 +1054,33 @@ body {
   </main>
 </div>
 
-<!-- ========================================================================
-     CONTEXT MENU
-     ======================================================================== -->
-<div class="apple-menu" id="appleMenu">
-  <button class="apple-menu-item" onclick="triggerAction('download')">
+<!-- CONTEXT MENU -->
+<div class="nova-menu" id="novaMenu">
+  <button class="nova-menu-item" onclick="triggerAction('download')">
     <span>Download</span>
     <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
   </button>
-  <button class="apple-menu-item" onclick="triggerAction('preview')">
-    <span>Visualizar / Editar</span>
+  <button class="nova-menu-item" onclick="triggerAction('preview')">
+    <span>Visualizar</span>
     <svg class="svg-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
   </button>
-  <button class="apple-menu-item" onclick="triggerAction('rename')">
+  <button class="nova-menu-item" onclick="triggerAction('rename')">
     <span>Renomear</span>
     <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
   </button>
-  <div class="apple-menu-sep"></div>
-  <button class="apple-menu-item danger" onclick="triggerAction('delete')">
+  <div class="nova-menu-sep"></div>
+  <button class="nova-menu-item danger" onclick="triggerAction('delete')">
     <span>Excluir</span>
     <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
   </button>
 </div>
 
-<!-- ========================================================================
-     MODAL BACKDROP
-     ======================================================================== -->
+<!-- MODAL -->
 <div class="modal-backdrop" id="modalBackdrop">
-  <div class="apple-modal" id="modalWindow"></div>
+  <div class="nova-modal" id="modalWindow"></div>
 </div>
 
-<!-- TOAST RACK -->
+<!-- TOASTS -->
 <div class="toast-rack" id="toastRack"></div>
 
 <script>
@@ -1060,7 +1127,7 @@ document.getElementById('loginForm').onsubmit = async (e) => {
   const btn = document.getElementById('loginBtn');
   const err = document.getElementById('loginErr');
   btn.disabled = true;
-  btn.textContent = 'Autenticando...';
+  btn.textContent = 'Verificando...';
   err.classList.remove('show');
 
   try {
@@ -1087,20 +1154,23 @@ document.getElementById('loginForm').onsubmit = async (e) => {
   } catch (ex) {
     err.textContent = ex.message;
     err.classList.add('show');
+    // Trigger shake animation manually if needed
+    err.style.animation = 'none';
+    setTimeout(() => err.style.animation = '', 10);
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Entrar';
+    btn.textContent = 'Entrar no Drive';
   }
 };
 
 // ============================================================================
-// FILE NAVIGATION & RENDER
+// FILE RENDERING
 // ============================================================================
 async function loadFiles(path) {
   state.currentPath = path;
   state.selected.clear();
   const container = document.getElementById('fileContainer');
-  container.innerHTML = '<div class="empty-view"><p>Carregando arquivos...</p></div>';
+  container.innerHTML = '<div class="empty-view"><p>Carregando...</p></div>';
 
   try {
     const params = new URLSearchParams({ path });
@@ -1110,7 +1180,7 @@ async function loadFiles(path) {
     renderViewport(data);
     renderBreadcrumbs(data.breadcrumbs);
   } catch (e) {
-    container.innerHTML = `<div class="empty-view"><h3>Erro ao carregar</h3><p>${e.message}</p></div>`;
+    container.innerHTML = `<div class="empty-view"><h3 style="color:var(--system-red)">Erro</h4><p>${e.message}</p></div>`;
   }
 }
 
@@ -1119,17 +1189,18 @@ function renderViewport(data) {
   if (!data.items || data.items.length === 0) {
     container.innerHTML = `
       <div class="empty-view">
-        <svg class="svg-icon xl" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-        <h3>Esta pasta está vazia</h3>
-        <p>Arraste arquivos ou clique em Upload</p>
+        <svg class="svg-icon xl" viewBox="0 0 24 24" style="color:var(--accent)"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+        <h3>Tudo limpo por aqui</h3>
+        <p>Arraste arquivos ou clique no botão de upload.</p>
       </div>
     `;
     return;
   }
 
   if (state.viewMode === 'grid') {
-    container.innerHTML = `<div class="file-grid">${data.items.map(item => `
+    container.innerHTML = `<div class="file-grid">${data.items.map((item, i) => `
       <div class="grid-card ${state.selected.has(item.path) ? 'selected' : ''}"
+           style="animation-delay: ${i * 0.03}s"
            onclick="selectItem('${item.path}', event)"
            ondblclick="${item.is_dir ? `navigateTo('${item.path}')` : `openPreview('${item.path}')`}"
            oncontextmenu="openContextMenu(event, '${item.path}')">
@@ -1149,8 +1220,9 @@ function renderViewport(data) {
           <div>Modificado</div>
           <div></div>
         </div>
-        ${data.items.map(item => `
+        ${data.items.map((item, i) => `
           <div class="list-row ${state.selected.has(item.path) ? 'selected' : ''}"
+               style="animation-delay: ${i * 0.02}s"
                onclick="selectItem('${item.path}', event)"
                ondblclick="${item.is_dir ? `navigateTo('${item.path}')` : `openPreview('${item.path}')`}"
                oncontextmenu="openContextMenu(event, '${item.path}')">
@@ -1173,7 +1245,7 @@ function renderBreadcrumbs(crumbs) {
   trail.innerHTML = `
     <div class="breadcrumb-item ${state.currentPath === '/' ? 'active' : ''}" onclick="navigateTo('/')">
       <svg class="svg-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-      Início
+      Root
     </div>
   `;
   if (crumbs) {
@@ -1199,7 +1271,7 @@ function goBack() {
 }
 
 // ============================================================================
-// SVG MAPPER
+// ICONS
 // ============================================================================
 function getIconSvg(item) {
   if (item.is_dir) {
@@ -1231,7 +1303,7 @@ function formatDate(iso) {
 }
 
 // ============================================================================
-// SELECTION & VIEW MODE
+// ACTIONS
 // ============================================================================
 function selectItem(path, evt) {
   if (evt.ctrlKey || evt.metaKey) {
@@ -1260,9 +1332,6 @@ function handleSearch(val) {
   }, 300);
 }
 
-// ============================================================================
-// CONTEXT MENU
-// ============================================================================
 function openContextMenu(e, path) {
   e.preventDefault();
   state.activeItem = path;
@@ -1271,14 +1340,14 @@ function openContextMenu(e, path) {
     state.selected.add(path);
     renderViewport({ items: state.items });
   }
-  const menu = document.getElementById('appleMenu');
+  const menu = document.getElementById('novaMenu');
   menu.style.left = e.clientX + 'px';
   menu.style.top = e.clientY + 'px';
   menu.classList.add('show');
 }
 
 document.addEventListener('click', () => {
-  document.getElementById('appleMenu').classList.remove('show');
+  document.getElementById('novaMenu').classList.remove('show');
 });
 
 function triggerAction(action) {
@@ -1296,24 +1365,26 @@ function triggerAction(action) {
 }
 
 // ============================================================================
-// MODAL ACTIONS
+// MODALS
 // ============================================================================
 function openUploadModal() {
   showModal(`
     <div class="modal-header">
-      <h3>Upload de Arquivos</h3>
+      <h3>Upload File</h3>
     </div>
     <div class="modal-body">
-      <div style="border:2px dashed var(--border);border-radius:var(--radius-sm);padding:40px;text-align:center;cursor:pointer"
+      <div style="border:2px dashed var(--border);border-radius:var(--radius-md);padding:48px 32px;text-align:center;cursor:pointer;background:var(--bg-card);transition:var(--bounce)"
+           onmouseover="this.style.background='var(--bg-card-hover)';this.style.borderColor='var(--accent)'"
+           onmouseout="this.style.background='var(--bg-card)';this.style.borderColor='var(--border)'"
            onclick="document.getElementById('modalFileInput').click()">
-        <svg class="svg-icon xl" viewBox="0 0 24 24" style="color:var(--accent);margin-bottom:12px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-        <p style="font-size:14px;font-weight:600">Clique ou arraste arquivos para enviar</p>
+        <svg class="svg-icon xl" viewBox="0 0 24 24" style="color:var(--accent);margin-bottom:16px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+        <p style="font-size:16px;font-weight:700">Browse ou solte os arquivos aqui</p>
         <input type="file" id="modalFileInput" multiple hidden onchange="doUpload(this.files)">
       </div>
-      <div id="uploadStatus" style="margin-top:16px;font-size:13px"></div>
+      <div id="uploadStatus" style="margin-top:20px;font-size:14px;font-weight:600;text-align:center"></div>
     </div>
     <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeModal()">Fechar</button>
+      <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
     </div>
   `);
 }
@@ -1324,13 +1395,13 @@ async function doUpload(files) {
   form.append('path', state.currentPath);
   for (const f of files) form.append('files', f);
 
-  status.innerHTML = '<p style="color:var(--accent)">Enviando arquivos...</p>';
+  status.innerHTML = '<span style="color:var(--accent)">Processando upload...</span>';
   try {
     const data = await fetchApi('POST', '/files/upload', form);
-    status.innerHTML = `<p style="color:var(--system-green)">✅ ${data.uploaded} arquivo(s) enviado(s) com sucesso!</p>`;
+    status.innerHTML = `<span style="color:var(--system-green)">✅ Upload de ${data.uploaded} item(ns) concluído.</span>`;
     setTimeout(() => { closeModal(); loadFiles(state.currentPath); }, 1200);
   } catch (e) {
-    status.innerHTML = `<p style="color:var(--system-red)">❌ ${e.message}</p>`;
+    status.innerHTML = `<span style="color:var(--system-red)">❌ ${e.message}</span>`;
   }
 }
 
@@ -1339,24 +1410,24 @@ function handleDrop(e) {
   document.getElementById('dropOverlay').classList.remove('active');
   if (e.dataTransfer.files.length > 0) {
     openUploadModal();
-    setTimeout(() => doUpload(e.dataTransfer.files), 100);
+    setTimeout(() => doUpload(e.dataTransfer.files), 200);
   }
 }
 
 function promptFolder() {
   showModal(`
     <div class="modal-header">
-      <h3>Nova Pasta</h3>
+      <h3>Criar Pasta</h3>
     </div>
     <div class="modal-body">
       <div class="field">
         <label>Nome da pasta</label>
-        <input type="text" id="newFolderName" placeholder="Nova pasta" autofocus>
+        <input type="text" id="newFolderName" placeholder="Ex: Projetos" autofocus>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
-      <button class="btn-apple" style="width:auto;padding:8px 16px" onclick="createFolder()">Criar</button>
+      <button class="btn-primary-sm" onclick="createFolder()">Criar</button>
     </div>
   `);
   setTimeout(() => document.getElementById('newFolderName')?.focus(), 100);
@@ -1382,7 +1453,7 @@ function promptRename(path) {
   const item = state.items.find(i => i.path === path);
   showModal(`
     <div class="modal-header">
-      <h3>Renomear</h3>
+      <h3>Renomear Item</h3>
     </div>
     <div class="modal-body">
       <div class="field">
@@ -1392,7 +1463,7 @@ function promptRename(path) {
     </div>
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
-      <button class="btn-apple" style="width:auto;padding:8px 16px" onclick="executeRename('${path}')">Salvar</button>
+      <button class="btn-primary-sm" onclick="executeRename('${path}')">Salvar Nome</button>
     </div>
   `);
 }
@@ -1416,14 +1487,14 @@ async function executeRename(path) {
 function confirmDelete(path) {
   showModal(`
     <div class="modal-header">
-      <h3>Confirmar exclusão</h3>
+      <h3>Excluir Item</h3>
     </div>
     <div class="modal-body">
-      <p style="font-size:14px;color:var(--text-secondary)">Tem certeza que deseja mover este item para a lixeira?</p>
+      <p style="font-size:15px;color:var(--text-secondary)">Tem certeza que deseja apagar este item? Ele será enviado para a Lixeira.</p>
     </div>
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
-      <button class="btn-apple" style="width:auto;padding:8px 16px;background:var(--system-red)" onclick="executeDelete('${path}')">Excluir</button>
+      <button class="btn-primary-sm btn-danger-sm" onclick="executeDelete('${path}')">Sim, Apagar</button>
     </div>
   `);
 }
@@ -1432,7 +1503,7 @@ async function executeDelete(path) {
   try {
     await fetchApi('DELETE', `/files?path=${encodeURIComponent(path)}`);
     closeModal();
-    toast('Item movido para a lixeira');
+    toast('Movido para a lixeira');
     loadFiles(state.currentPath);
   } catch (e) {
     toast(e.message, 'error');
@@ -1448,8 +1519,8 @@ async function openPreview(path) {
       <div class="modal-header">
         <h3>${item.name}</h3>
       </div>
-      <div class="modal-body" style="text-align:center">
-        <img src="${API}/files/download?path=${encodeURIComponent(path)}&token=${state.token}" style="max-width:100%;max-height:60vh;border-radius:var(--radius-sm)">
+      <div class="modal-body" style="text-align:center;background:var(--bg-main)">
+        <img src="${API}/files/download?path=${encodeURIComponent(path)}&token=${state.token}" style="max-width:100%;max-height:50vh;border-radius:var(--radius-sm);box-shadow:var(--shadow-float)">
       </div>
       <div class="modal-footer">
         <button class="btn-secondary" onclick="closeModal()">Fechar</button>
@@ -1464,12 +1535,12 @@ async function openPreview(path) {
       <div class="modal-header">
         <h3>${item.name}</h3>
       </div>
-      <div class="modal-body">
+      <div class="modal-body" style="padding:16px">
         <textarea class="code-editor" id="codeContent">${escapeHtml(data.content)}</textarea>
       </div>
       <div class="modal-footer">
         <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
-        <button class="btn-apple" style="width:auto;padding:8px 16px" onclick="saveCode('${path}')">Salvar</button>
+        <button class="btn-primary-sm" onclick="saveCode('${path}')">Salvar Edição</button>
       </div>
     `);
   } catch (e) {
@@ -1485,7 +1556,7 @@ async function saveCode(path) {
     form.append('content', content);
     await fetchApi('PUT', '/files/save', form);
     closeModal();
-    toast('Arquivo salvo');
+    toast('Edições salvas com sucesso', 'success');
   } catch (e) {
     toast(e.message, 'error');
   }
@@ -1507,11 +1578,11 @@ function closeModal() {
   document.getElementById('modalBackdrop').classList.remove('show');
 }
 
-function toast(msg, type = 'info') {
+function toast(msg) {
   const rack = document.getElementById('toastRack');
   const t = document.createElement('div');
-  t.className = 'apple-toast';
-  t.textContent = msg;
+  t.className = 'nova-toast';
+  t.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24" style="color:var(--accent)"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> <span>${msg}</span>`;
   rack.appendChild(t);
   setTimeout(() => t.remove(), 2800);
 }
