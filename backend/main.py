@@ -255,10 +255,10 @@ async def get_me(current_user: dict = Depends(get_current_user)):
 async def list_files(
     path: str = Query("/", description="Caminho do diretório"),
     search: Optional[str] = Query(None, description="Termo de busca"),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    x_secure_code: Optional[str] = Header(None)
 ):
     """Lista arquivos e pastas em um diretório."""
-    check_security(path, x_secure_code)
     check_security(path, x_secure_code)
     full_path = get_full_path(path)
     
@@ -344,10 +344,10 @@ async def list_files(
 @app.get("/api/files/info")
 async def file_info(
     path: str = Query(..., description="Caminho do arquivo"),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    x_secure_code: Optional[str] = Header(None)
 ):
     """Retorna informações detalhadas de um arquivo/pasta."""
-    check_security(path, x_secure_code)
     check_security(path, x_secure_code)
     full_path = get_full_path(path)
     
@@ -488,7 +488,6 @@ async def delete_file(
 ):
     """Exclui arquivo ou pasta (move para lixeira ou exclui permanentemente)."""
     check_security(path, x_secure_code)
-    check_security(path, x_secure_code)
     full_path = get_full_path(path)
     
     if not full_path.exists():
@@ -522,10 +521,10 @@ async def delete_file(
 @app.get("/api/files/download")
 async def download_file(
     path: str = Query(...),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    x_secure_code: Optional[str] = Query(None)
 ):
     """Download de arquivo ou pasta (ZIP se for pasta)."""
-    check_security(path, x_secure_code)
     check_security(path, x_secure_code)
     full_path = get_full_path(path)
     
@@ -567,7 +566,6 @@ async def copy_file(
     x_secure_code: Optional[str] = Header(None)
 ):
     """Copia arquivo ou pasta para outro local."""
-    check_security(destination, x_secure_code)
     check_security(path, x_secure_code)
     check_security(destination, x_secure_code)
     src = get_full_path(path)
@@ -607,7 +605,6 @@ async def move_file(
     x_secure_code: Optional[str] = Header(None)
 ):
     """Move arquivo ou pasta para outro local."""
-    check_security(destination, x_secure_code)
     check_security(path, x_secure_code)
     check_security(destination, x_secure_code)
     src = get_full_path(path)
@@ -634,7 +631,8 @@ async def move_file(
 @app.get("/api/files/preview")
 async def preview_file(
     path: str = Query(...),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    x_secure_code: Optional[str] = Query(None)
 ):
     """Retorna conteúdo de arquivo de texto para preview."""
     check_security(path, x_secure_code)
@@ -666,7 +664,6 @@ async def save_file(
     x_secure_code: Optional[str] = Header(None)
 ):
     """Salva conteúdo em arquivo de texto."""
-    check_security(path, x_secure_code)
     check_security(path, x_secure_code)
     full_path = get_full_path(path)
     
