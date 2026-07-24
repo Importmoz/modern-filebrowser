@@ -19,7 +19,7 @@ import datetime
 from pathlib import Path
 from typing import Optional, List
 
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Depends, Query, Request
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Depends, Query, Request, Header
 from fastapi.responses import StreamingResponse, JSONResponse, FileResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -36,6 +36,7 @@ JWT_EXPIRATION_HOURS = 24
 USERS_FILE = os.environ.get("USERS_FILE", "/app/data/users.json")
 PORT = int(os.environ.get("PORT", 8090))
 MAX_FILE_SIZE = int(os.environ.get("MAX_FILE_SIZE", 500 * 1024 * 1024))  # 500MB
+SECURE_CODE = os.environ.get("SECURE_CODE", "123456")
 
 app = FastAPI(title="NovaDrive", docs_url=None, redoc_url=None)
 
@@ -51,6 +52,19 @@ app.add_middleware(
 # Utilitários
 # =============================================================================
 
+
+def is_system_path(path_str: str) -> bool:
+    try:
+        full = str(get_full_path(path_str))
+        protected = ('/etc', '/var', '/usr', '/bin', '/sbin', '/lib', '/boot', '/sys', '/proc', '/dev')
+        return full.startswith(protected) or full == '/'
+    except:
+        return False
+
+def check_security(path_str: str, code: str):
+    if is_system_path(path_str) and code != SECURE_CODE:
+        raise HTTPException(403, "Código de segurança inválido ou ausente para área de sistema")
+        
 def load_users():
     """Carrega usuários do arquivo JSON."""
     default_users = {
@@ -238,6 +252,8 @@ async def list_files(
     current_user: dict = Depends(get_current_user)
 ):
     """Lista arquivos e pastas em um diretório."""
+    check_security(path, x_secure_code)
+    check_security(path, x_secure_code)
     full_path = get_full_path(path)
     
     if not full_path.exists():
@@ -325,6 +341,8 @@ async def file_info(
     current_user: dict = Depends(get_current_user)
 ):
     """Retorna informações detalhadas de um arquivo/pasta."""
+    check_security(path, x_secure_code)
+    check_security(path, x_secure_code)
     full_path = get_full_path(path)
     
     if not full_path.exists():
@@ -351,9 +369,11 @@ async def file_info(
 async def upload_file(
     path: str = Form("/"),
     files: List[UploadFile] = File(...),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    x_secure_code: Optional[str] = Header(None)
 ):
     """Upload de um ou múltiplos arquivos."""
+    check_security(path, x_secure_code)
     upload_dir = get_full_path(path)
     
     if not upload_dir.exists():
@@ -401,9 +421,11 @@ async def upload_file(
 async def create_folder(
     path: str = Form("/"),
     name: str = Form(...),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    x_secure_code: Optional[str] = Header(None)
 ):
     """Cria uma nova pasta."""
+    check_security(path, x_secure_code)
     parent = get_full_path(path)
     
     if not parent.exists():
@@ -428,9 +450,11 @@ async def create_folder(
 async def rename_file(
     path: str = Form(...),
     new_name: str = Form(...),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    x_secure_code: Optional[str] = Header(None)
 ):
     """Renomeia arquivo ou pasta."""
+    check_security(path, x_secure_code)
     old_path = get_full_path(path)
     
     if not old_path.exists():
@@ -453,9 +477,12 @@ async def rename_file(
 async def delete_file(
     path: str = Query(...),
     permanent: bool = Query(False),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    x_secure_code: Optional[str] = Header(None)
 ):
     """Exclui arquivo ou pasta (move para lixeira ou exclui permanentemente)."""
+    check_security(path, x_secure_code)
+    check_security(path, x_secure_code)
     full_path = get_full_path(path)
     
     if not full_path.exists():
@@ -492,6 +519,8 @@ async def download_file(
     current_user: dict = Depends(get_current_user)
 ):
     """Download de arquivo ou pasta (ZIP se for pasta)."""
+    check_security(path, x_secure_code)
+    check_security(path, x_secure_code)
     full_path = get_full_path(path)
     
     if not full_path.exists():
@@ -528,9 +557,13 @@ async def download_file(
 async def copy_file(
     path: str = Form(...),
     destination: str = Form(...),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    x_secure_code: Optional[str] = Header(None)
 ):
     """Copia arquivo ou pasta para outro local."""
+    check_security(destination, x_secure_code)
+    check_security(path, x_secure_code)
+    check_security(destination, x_secure_code)
     src = get_full_path(path)
     dst_parent = get_full_path(destination)
     
@@ -564,9 +597,13 @@ async def copy_file(
 async def move_file(
     path: str = Form(...),
     destination: str = Form(...),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    x_secure_code: Optional[str] = Header(None)
 ):
     """Move arquivo ou pasta para outro local."""
+    check_security(destination, x_secure_code)
+    check_security(path, x_secure_code)
+    check_security(destination, x_secure_code)
     src = get_full_path(path)
     dst_parent = get_full_path(destination)
     
@@ -594,6 +631,7 @@ async def preview_file(
     current_user: dict = Depends(get_current_user)
 ):
     """Retorna conteúdo de arquivo de texto para preview."""
+    check_security(path, x_secure_code)
     full_path = get_full_path(path)
     
     if not full_path.exists() or not full_path.is_file():
@@ -618,9 +656,12 @@ async def preview_file(
 async def save_file(
     path: str = Form(...),
     content: str = Form(...),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    x_secure_code: Optional[str] = Header(None)
 ):
     """Salva conteúdo em arquivo de texto."""
+    check_security(path, x_secure_code)
+    check_security(path, x_secure_code)
     full_path = get_full_path(path)
     
     if not full_path.exists():

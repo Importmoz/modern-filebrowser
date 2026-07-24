@@ -12,7 +12,7 @@
    NOVA DESIGN SYSTEM - FLUID, CURVED, ANIMATED
    ============================================================================ */
 :root {
-  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
   /* Color Palette - Deep Dark Glass */
@@ -958,19 +958,47 @@ body {
       NovaDrive
     </div>
 
+    
     <div>
-      <div class="nav-section-title">Navigation</div>
+      <div class="nav-section-title">Pastas Livres</div>
       <div class="nav-group">
-        <button class="nav-btn active" onclick="navigateTo('/')">
+        <button class="nav-btn active" onclick="navigateTo('/workspace')">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+          Workspace
+        </button>
+        <button class="nav-btn" onclick="navigateTo('/home')">
           <svg class="svg-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
           Home
         </button>
-        <button class="nav-btn" onclick="navigateTo('/.trash')">
-          <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-          Lixeira
+        <button class="nav-btn" onclick="navigateTo('/opt')">
+          <svg class="svg-icon" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+          Opt
         </button>
       </div>
     </div>
+
+    <div>
+      <div class="nav-section-title">Sistema (Protegido)</div>
+      <div class="nav-group">
+        <button class="nav-btn" onclick="navigateTo('/')">
+          <svg class="svg-icon" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+          Root ( / )
+        </button>
+        <button class="nav-btn" onclick="navigateTo('/etc')">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          /etc
+        </button>
+        <button class="nav-btn" onclick="navigateTo('/var')">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+          /var
+        </button>
+        <button class="nav-btn" onclick="navigateTo('/usr')">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          /usr
+        </button>
+      </div>
+    </div>
+
 
     <div>
       <div class="nav-section-title">Quick Actions</div>
@@ -1100,24 +1128,67 @@ const state = {
 
 const API = window.location.origin + '/api';
 
+
 async function fetchApi(method, path, body = null) {
   const opts = {
     method,
     headers: { 'Authorization': `Bearer ${state.token}` }
   };
+  if (state.secureCode) {
+    opts.headers['X-Secure-Code'] = state.secureCode;
+  }
   if (body instanceof FormData) {
     opts.body = body;
   } else if (body) {
     opts.headers['Content-Type'] = 'application/json';
     opts.body = JSON.stringify(body);
   }
-  const res = await fetch(API + path, opts);
+  let res = await fetch(API + path, opts);
+  if (res.status === 403) {
+    const err = await res.clone().json().catch(() => ({}));
+    if (err.detail && err.detail.includes('Código de segurança')) {
+      const code = await promptSecureCode();
+      if (!code) throw new Error('Ação cancelada: Código de segurança necessário');
+      state.secureCode = code;
+      opts.headers['X-Secure-Code'] = code;
+      res = await fetch(API + path, opts);
+    }
+  }
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
     throw new Error(err.detail || 'Erro na requisição');
   }
   return res.json().catch(() => ({}));
 }
+
+function promptSecureCode() {
+  return new Promise(resolve => {
+    showModal(`
+      <div class="modal-header">
+        <h3>🔐 Proteção de Sistema</h3>
+      </div>
+      <div class="modal-body">
+        <p style="color:var(--text-secondary);font-size:14px;margin-bottom:16px;line-height:1.5">Você está modificando um diretório de sistema crítico. Insira o código seguro (Padrão: 123456):</p>
+        <input type="password" id="secCode" style="width:100%;padding:14px 16px;border-radius:var(--radius-full);border:1px solid var(--border);background:var(--bg-card);color:white;outline:none" placeholder="Código Seguro">
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="resolveSecureCode(null)">Cancelar</button>
+        <button class="btn-primary-sm" onclick="resolveSecureCode(document.getElementById('secCode').value)">Verificar</button>
+      </div>
+    `);
+    setTimeout(() => document.getElementById('secCode').focus(), 100);
+    window.currentSecureResolve = resolve;
+  });
+}
+
+function resolveSecureCode(val) {
+  closeModal();
+  if (window.currentSecureResolve) {
+    window.currentSecureResolve(val);
+    window.currentSecureResolve = null;
+  }
+}
+
 
 // ============================================================================
 // AUTH
@@ -1273,28 +1344,25 @@ function goBack() {
 // ============================================================================
 // ICONS
 // ============================================================================
+
 function getIconSvg(item) {
-  if (item.is_dir) {
-    return `<svg class="svg-icon lg" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>`;
-  }
-  const type = item.icon;
-  if (type === 'image') {
-    return `<svg class="svg-icon lg" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>`;
-  }
-  if (type === 'video') {
-    return `<svg class="svg-icon lg" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>`;
-  }
-  if (type === 'audio') {
-    return `<svg class="svg-icon lg" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>`;
-  }
-  if (type === 'code') {
-    return `<svg class="svg-icon lg" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>`;
-  }
-  if (type === 'archive') {
-    return `<svg class="svg-icon lg" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>`;
-  }
-  return `<svg class="svg-icon lg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>`;
+  if (item.is_dir) return `<svg class="svg-icon lg" style="color:#3b82f6" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>`;
+  
+  const ext = item.extension || '';
+  if (item.icon === 'image') return `<svg class="svg-icon lg" style="color:#f59e0b" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>`;
+  if (item.icon === 'video') return `<svg class="svg-icon lg" style="color:#ef4444" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>`;
+  if (item.icon === 'audio') return `<svg class="svg-icon lg" style="color:#10b981" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>`;
+  if (item.icon === 'code' || ['.json','.xml','.yaml','.yml','.env','.css','.html','.sh'].includes(ext)) return `<svg class="svg-icon lg" style="color:#8b5cf6" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>`;
+  if (item.icon === 'archive' || ['.zip','.rar','.7z','.tar','.gz'].includes(ext)) return `<svg class="svg-icon lg" style="color:#eab308" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>`;
+  if (item.icon === 'pdf' || ext === '.pdf') return `<svg class="svg-icon lg" style="color:#ef4444" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M16 13H8"></path><path d="M16 17H8"></path><path d="M10 9H8"></path></svg>`;
+  
+  if (['.doc','.docx','.odt'].includes(ext)) return `<svg class="svg-icon lg" style="color:#3b82f6" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 15l2-3 2 3"></path></svg>`;
+  if (['.xls','.xlsx','.csv'].includes(ext)) return `<svg class="svg-icon lg" style="color:#10b981" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M8 13h8"></path><path d="M8 17h8"></path><path d="M12 13v4"></path></svg>`;
+  if (['.ppt','.pptx'].includes(ext)) return `<svg class="svg-icon lg" style="color:#f97316" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><rect x="8" y="10" width="8" height="6"></rect></svg>`;
+  
+  return `<svg class="svg-icon lg" style="color:var(--text-secondary)" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>`;
 }
+
 
 function formatDate(iso) {
   if (!iso) return '';
