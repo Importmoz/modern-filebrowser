@@ -3,696 +3,706 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NovaDrive</title>
+<title>NovaDrive — Files</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ============================================================================
-   VARIÁVEIS E RESET
+   APPLE FILES DESIGN SYSTEM
    ============================================================================ */
 :root {
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #12121a;
-  --bg-card: rgba(255,255,255,0.04);
-  --bg-card-hover: rgba(255,255,255,0.07);
-  --bg-glass: rgba(255,255,255,0.03);
-  --border: rgba(255,255,255,0.08);
-  --border-hover: rgba(255,255,255,0.15);
-  --text-primary: #f0f0f5;
-  --text-secondary: rgba(255,255,255,0.55);
-  --text-muted: rgba(255,255,255,0.35);
-  --accent: #6c5ce7;
-  --accent-light: #a29bfe;
-  --accent-gradient: linear-gradient(135deg, #6c5ce7, #00cec9);
-  --success: #00b894;
-  --warning: #fdcb6e;
-  --danger: #e17055;
-  --info: #74b9ff;
-  --radius: 12px;
-  --radius-sm: 8px;
-  --radius-lg: 16px;
-  --shadow: 0 8px 32px rgba(0,0,0,0.3);
-  --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Color Palette - Apple Dark Glass */
+  --bg-app: #0d0e12;
+  --bg-sidebar: rgba(18, 20, 29, 0.75);
+  --bg-main: rgba(13, 14, 18, 0.6);
+  --bg-card: rgba(255, 255, 255, 0.035);
+  --bg-card-hover: rgba(255, 255, 255, 0.07);
+  --bg-card-active: rgba(255, 255, 255, 0.1);
+  --bg-glass: rgba(255, 255, 255, 0.03);
+  --bg-glass-heavy: rgba(22, 24, 34, 0.85);
+
+  --border: rgba(255, 255, 255, 0.08);
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  --border-focus: rgba(10, 132, 255, 0.5);
+
+  --text-primary: #f2f2f7;
+  --text-secondary: #8e8e93;
+  --text-tertiary: #636366;
+  --text-quaternary: #48484a;
+
+  /* Apple System Colors */
+  --system-blue: #0a84ff;
+  --system-blue-glow: rgba(10, 132, 255, 0.25);
+  --system-purple: #5e5ce6;
+  --system-green: #30d158;
+  --system-red: #ff453a;
+  --system-orange: #ff9f0a;
+  --system-yellow: #ffd60a;
+
+  --accent: var(--system-blue);
+  --accent-gradient: linear-gradient(135deg, #0a84ff 0%, #5e5ce6 100%);
+  --accent-soft: rgba(10, 132, 255, 0.12);
+
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+
+  --blur-glass: blur(30px) saturate(180%);
+  --transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-* { margin:0; padding:0; box-sizing:border-box; }
+* { margin:0; padding:0; box-sizing:border-box; -webkit-font-smoothing: antialiased; }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
-  background: var(--bg-primary);
+  font-family: var(--font-sans);
+  background-color: var(--bg-app);
   color: var(--text-primary);
   min-height: 100vh;
-  user-select: none;
   overflow: hidden;
+  user-select: none;
 }
 
-/* ============================================================================
-   ANIMATED BACKGROUND
-   ============================================================================ */
-.bg-animated {
+/* Background Atmosphere */
+.bg-glow {
   position: fixed;
   inset: 0;
   z-index: 0;
-  overflow: hidden;
   pointer-events: none;
+  overflow: hidden;
 }
-.bg-animated::before {
-  content: '';
+.bg-glow-1 {
   position: absolute;
-  width: 600px; height: 600px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(108,92,231,0.12), transparent 70%);
-  top: -200px; left: -200px;
-  animation: float 20s ease-in-out infinite;
+  top: -10%; left: -10%;
+  width: 50vw; height: 50vw;
+  background: radial-gradient(circle, rgba(10, 132, 255, 0.08) 0%, transparent 70%);
+  filter: blur(80px);
 }
-.bg-animated::after {
-  content: '';
+.bg-glow-2 {
   position: absolute;
-  width: 500px; height: 500px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(0,206,201,0.08), transparent 70%);
-  bottom: -150px; right: -150px;
-  animation: float 25s ease-in-out infinite reverse;
-}
-@keyframes float {
-  0%, 100% { transform: translate(0,0) scale(1); }
-  33% { transform: translate(30px,-30px) scale(1.05); }
-  66% { transform: translate(-20px,20px) scale(0.95); }
+  bottom: -10%; right: -10%;
+  width: 50vw; height: 50vw;
+  background: radial-gradient(circle, rgba(94, 92, 230, 0.06) 0%, transparent 70%);
+  filter: blur(80px);
 }
 
 /* ============================================================================
-   LOGIN
+   SVG ICON SYSTEM
    ============================================================================ */
-.login-container {
+.svg-icon {
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.8;
+  stroke: currentColor;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.svg-icon.lg { width: 24px; height: 24px; }
+.svg-icon.xl { width: 44px; height: 44px; }
+
+/* ============================================================================
+   LOGIN SCREEN (APPLE STYLE)
+   ============================================================================ */
+.login-wrapper {
   position: fixed;
   inset: 0;
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
-  background: var(--bg-primary);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  background: rgba(13, 14, 18, 0.95);
+  backdrop-filter: var(--blur-glass);
+  transition: opacity 0.4s ease, transform 0.4s ease;
 }
-.login-container.hidden {
+.login-wrapper.hidden {
   opacity: 0;
-  transform: scale(1.05);
   pointer-events: none;
+  transform: scale(1.02);
 }
 
-.login-box {
-  background: var(--bg-glass);
+.login-card {
+  width: 380px;
+  padding: 40px;
+  background: var(--bg-sidebar);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 48px 40px;
-  width: 400px;
-  max-width: 90vw;
-  backdrop-filter: blur(20px);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.login-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent-gradient);
 }
 
-.login-logo {
-  text-align: center;
-  margin-bottom: 36px;
-}
-.login-logo .logo-icon {
-  width: 56px; height: 56px;
-  background: var(--accent-gradient);
-  border-radius: 16px;
+.login-brand {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
-  margin-bottom: 16px;
-  box-shadow: 0 8px 24px rgba(108,92,231,0.3);
-}
-.login-logo h1 {
-  font-size: 24px;
-  font-weight: 700;
-  background: var(--accent-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-.login-logo p {
-  color: var(--text-secondary);
-  font-size: 14px;
-  margin-top: 4px;
+  width: 60px; height: 60px;
+  border-radius: 16px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  margin-bottom: 20px;
+  border: 1px solid rgba(10, 132, 255, 0.2);
 }
 
-.form-group {
-  margin-bottom: 20px;
+.login-card h1 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-bottom: 6px;
 }
-.form-group label {
-  display: block;
+.login-card p {
   font-size: 13px;
-  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 28px;
+}
+
+.field {
+  margin-bottom: 16px;
+  text-align: left;
+}
+.field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
   color: var(--text-secondary);
   margin-bottom: 6px;
 }
-.form-group input {
+.field input {
   width: 100%;
-  padding: 12px 16px;
-  background: rgba(255,255,255,0.06);
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
-  font-size: 15px;
-  transition: var(--transition);
+  font-family: var(--font-sans);
+  font-size: 14px;
   outline: none;
+  transition: var(--transition);
 }
-.form-group input:focus {
+.field input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(108,92,231,0.15);
-  background: rgba(255,255,255,0.08);
-}
-.form-group input::placeholder {
-  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px var(--system-blue-glow);
 }
 
-.btn {
-  padding: 12px 24px;
+.btn-apple {
+  width: 100%;
+  padding: 12px;
+  background: var(--accent);
+  color: #fff;
   border: none;
   border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: var(--transition);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
   justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
 }
-.btn-primary {
-  background: var(--accent-gradient);
-  color: white;
-  width: 100%;
-  box-shadow: 0 4px 16px rgba(108,92,231,0.3);
-}
-.btn-primary:hover {
+.btn-apple:hover {
+  background: #0071e3;
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(108,92,231,0.4);
+  box-shadow: 0 4px 16px var(--system-blue-glow);
 }
-.btn-primary:active {
-  transform: translateY(0);
-}
-.btn-primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
+.btn-apple:active { transform: translateY(0); }
 
-.btn-icon {
-  padding: 8px;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: var(--transition);
-  font-size: 18px;
-  line-height: 1;
-}
-.btn-icon:hover {
-  background: var(--bg-card-hover);
-  color: var(--text-primary);
-  border-color: var(--border-hover);
-}
-.btn-icon.danger:hover {
-  background: rgba(225,112,85,0.15);
-  color: var(--danger);
-  border-color: rgba(225,112,85,0.3);
-}
-
-.login-error {
-  color: var(--danger);
-  font-size: 13px;
-  text-align: center;
-  margin-top: 12px;
+.login-err {
+  margin-top: 14px;
+  padding: 10px;
+  background: rgba(255, 69, 58, 0.1);
+  border: 1px solid rgba(255, 69, 58, 0.2);
+  border-radius: var(--radius-xs);
+  color: var(--system-red);
+  font-size: 12px;
   display: none;
 }
-.login-error.show { display: block; }
+.login-err.show { display: block; }
 
 /* ============================================================================
-   LAYOUT PRINCIPAL
+   APP LAYOUT (APPLE FINDER STYLE)
    ============================================================================ */
-.app-layout {
+.app-container {
   display: flex;
   height: 100vh;
+  width: 100vw;
   position: relative;
   z-index: 1;
-  opacity: 0;
-  transition: opacity 0.4s ease;
 }
-.app-layout.show { opacity: 1; }
 
-/* ============================================================================
-   SIDEBAR
-   ============================================================================ */
+/* SIDEBAR */
 .sidebar {
-  width: 260px;
-  min-width: 260px;
-  background: var(--bg-secondary);
+  width: 250px;
+  min-width: 250px;
+  background: var(--bg-sidebar);
+  backdrop-filter: var(--blur-glass);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  padding: 20px 16px;
-  gap: 4px;
+  padding: 16px 12px;
+  gap: 20px;
 }
 
-.sidebar-header {
+/* Window Traffic Lights (Apple style) */
+.window-controls {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 0 8px 20px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 12px;
+  gap: 8px;
+  padding: 4px 8px 12px;
 }
-.sidebar-header .logo-small {
-  width: 36px; height: 36px;
-  background: var(--accent-gradient);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
+.traffic-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
 }
-.sidebar-header h2 {
-  font-size: 16px;
-  font-weight: 700;
-}
-.sidebar-header .user-badge {
-  margin-left: auto;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 4px 10px;
+.traffic-close { background: #ff5f56; border: 1px solid #e0443e; }
+.traffic-min { background: #ffbd2e; border: 1px solid #dea123; }
+.traffic-max { background: #27c93f; border: 1px solid #1aab29; }
+
+.nav-section-title {
   font-size: 11px;
-  color: var(--text-secondary);
-  font-weight: 500;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-tertiary);
+  padding: 0 10px 6px;
 }
 
-.sidebar-item {
+.nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-btn {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: var(--radius-sm);
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-xs);
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
+  background: none;
+  border: none;
   cursor: pointer;
   transition: var(--transition);
-  border: none;
-  background: none;
   width: 100%;
   text-align: left;
 }
-.sidebar-item:hover {
-  background: var(--bg-card);
+.nav-btn:hover {
+  background: var(--bg-card-hover);
   color: var(--text-primary);
 }
-.sidebar-item.active {
-  background: rgba(108,92,231,0.12);
-  color: var(--accent-light);
-}
-.sidebar-item .icon {
-  font-size: 18px;
-  width: 24px;
-  text-align: center;
-}
-
-.sidebar-section {
-  font-size: 11px;
+.nav-btn.active {
+  background: var(--accent-soft);
+  color: var(--accent);
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--text-muted);
-  padding: 16px 12px 6px;
 }
+.nav-btn .svg-icon { color: inherit; }
 
-.sidebar-storage {
-  margin-top: auto;
-  padding: 16px 12px;
+.sidebar-spacer { flex: 1; }
+
+.storage-widget {
+  padding: 12px;
   background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
 }
-.sidebar-storage .storage-label {
+.storage-info {
   display: flex;
   justify-content: space-between;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-secondary);
   margin-bottom: 8px;
+  font-weight: 500;
 }
-.sidebar-storage .storage-bar {
-  height: 4px;
-  background: var(--border);
-  border-radius: 4px;
+.storage-track {
+  height: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-full);
   overflow: hidden;
 }
-.sidebar-storage .storage-bar-fill {
+.storage-fill {
   height: 100%;
   background: var(--accent-gradient);
-  border-radius: 4px;
-  transition: width 0.5s ease;
+  border-radius: var(--radius-full);
+  transition: width 0.4s ease;
 }
 
-/* ============================================================================
-   MAIN CONTENT
-   ============================================================================ */
-.main-content {
+/* MAIN CONTENT AREA */
+.content-area {
   flex: 1;
   display: flex;
   flex-direction: column;
+  background: var(--bg-main);
   min-width: 0;
-  overflow: hidden;
 }
 
-/* ============================================================================
-   TOOLBAR
-   ============================================================================ */
+/* TOP TOOLBAR */
 .toolbar {
+  height: 56px;
+  padding: 0 20px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px 24px;
-  background: var(--bg-glass);
+  justify-content: space-between;
   border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(12px);
-  flex-wrap: wrap;
+  background: rgba(18, 20, 29, 0.4);
+  backdrop-filter: var(--blur-glass);
+  gap: 16px;
 }
 
 .toolbar-left {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   flex: 1;
   min-width: 0;
 }
 
-.breadcrumb {
+.btn-icon-soft {
+  width: 32px; height: 32px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-icon-soft:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
+/* Apple Pill Breadcrumb */
+.breadcrumb-trail {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 14px;
-  color: var(--text-secondary);
-  overflow: hidden;
-  flex-wrap: wrap;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
-.breadcrumb a {
+.breadcrumb-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: var(--radius-xs);
+  font-size: 13px;
   color: var(--text-secondary);
-  text-decoration: none;
-  padding: 4px 8px;
-  border-radius: 4px;
+  cursor: pointer;
   transition: var(--transition);
   white-space: nowrap;
-  cursor: pointer;
 }
-.breadcrumb a:hover {
+.breadcrumb-item:hover {
+  background: var(--bg-card-hover);
   color: var(--text-primary);
-  background: var(--bg-card);
 }
-.breadcrumb a.root {
-  font-size: 16px;
-  padding: 4px 6px;
-}
-.breadcrumb .separator {
-  color: var(--text-muted);
-  font-size: 14px;
-}
-.breadcrumb .current {
+.breadcrumb-item.active {
   color: var(--text-primary);
-  font-weight: 500;
-  padding: 4px 8px;
+  font-weight: 600;
+}
+.breadcrumb-sep {
+  color: var(--text-tertiary);
+  font-size: 11px;
 }
 
 .toolbar-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
-.search-box {
+/* Search Input */
+.search-bar {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--bg-card);
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 6px 12px;
+  width: 200px;
   transition: var(--transition);
-  min-width: 200px;
 }
-.search-box:focus-within {
+.search-bar:focus-within {
+  width: 260px;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(108,92,231,0.1);
-  background: var(--bg-card-hover);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px var(--system-blue-glow);
 }
-.search-box input {
+.search-bar input {
   background: none;
   border: none;
   outline: none;
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: 13px;
   width: 100%;
+  font-family: var(--font-sans);
 }
-.search-box input::placeholder {
-  color: var(--text-muted);
+.search-bar input::placeholder { color: var(--text-tertiary); }
+
+/* View Mode Segmented Control */
+.segmented-control {
+  display: flex;
+  padding: 2px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
 }
-.search-box .icon {
-  font-size: 16px;
-  color: var(--text-muted);
+.segmented-btn {
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+}
+.segmented-btn.active {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-primary);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 
-/* ============================================================================
-   FILE LIST
-   ============================================================================ */
-.file-area {
+.btn-action-primary {
+  padding: 7px 14px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-action-primary:hover {
+  background: #0071e3;
+  box-shadow: 0 2px 10px var(--system-blue-glow);
+}
+
+/* FILE VIEWPORT */
+.viewport {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 24px;
+  padding: 24px;
+  position: relative;
 }
 
 /* Grid View */
 .file-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
 }
 
-.file-card {
-  background: var(--bg-glass);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px 16px 16px;
+.grid-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 10px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: var(--transition);
   position: relative;
   text-align: center;
 }
-.file-card:hover {
-  background: var(--bg-card);
-  border-color: var(--border-hover);
+.grid-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  box-shadow: var(--shadow-sm);
 }
-.file-card:active {
-  transform: translateY(0);
-}
-.file-card.selected {
+.grid-card.selected {
+  background: var(--accent-soft);
   border-color: var(--accent);
-  background: rgba(108,92,231,0.08);
   box-shadow: 0 0 0 1px var(--accent);
 }
 
-.file-card .file-icon {
-  font-size: 40px;
-  margin-bottom: 10px;
-  line-height: 1;
-}
-.file-card .file-name {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-primary);
-  word-break: break-all;
-  line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.file-card .file-size {
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-top: 4px;
-}
-.file-card .file-checkbox {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 20px; height: 20px;
-  border: 2px solid var(--border);
-  border-radius: 6px;
-  display: none;
+.grid-card .icon-wrapper {
+  width: 56px; height: 56px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-secondary);
+  margin-bottom: 10px;
+  border-radius: var(--radius-sm);
   transition: var(--transition);
+}
+.grid-card .icon-wrapper.folder { color: #5eb0ff; }
+.grid-card .icon-wrapper.image { color: #ff9f0a; }
+.grid-card .icon-wrapper.video { color: #ff3b30; }
+.grid-card .icon-wrapper.audio { color: #30d158; }
+.grid-card .icon-wrapper.document { color: #64d2ff; }
+.grid-card .icon-wrapper.code { color: #bf5af2; }
+.grid-card .icon-wrapper.archive { color: #ffd60a; }
+.grid-card .icon-wrapper.file { color: var(--text-secondary); }
+
+.grid-card .title {
   font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 4px;
 }
-.file-card.selected .file-checkbox,
-.file-card.multi-select .file-checkbox {
-  display: flex;
-}
-.file-card.selected .file-checkbox {
-  background: var(--accent);
-  border-color: var(--accent);
+.grid-card .meta {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 3px;
 }
 
 /* List View */
-.file-list-view {
+.file-list {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
-.file-list-header {
-  display: flex;
-  align-items: center;
+.list-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.2fr 40px;
   padding: 8px 16px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text-muted);
+  letter-spacing: 0.6px;
+  color: var(--text-tertiary);
   border-bottom: 1px solid var(--border);
-  gap: 16px;
+  margin-bottom: 4px;
 }
-.file-list-header .col-check { width: 36px; }
-.file-list-header .col-name { flex: 3; cursor: pointer; }
-.file-list-header .col-size { width: 100px; cursor: pointer; text-align: right; }
-.file-list-header .col-date { width: 160px; cursor: pointer; }
-
-.file-row {
-  display: flex;
+.list-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.2fr 40px;
   align-items: center;
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  border-radius: var(--radius-xs);
   cursor: pointer;
   transition: var(--transition);
-  gap: 16px;
 }
-.file-row:hover {
-  background: var(--bg-card);
+.list-row:hover { background: var(--bg-card-hover); }
+.list-row.selected {
+  background: var(--accent-soft);
 }
-.file-row.selected {
-  background: rgba(108,92,231,0.08);
-}
-.file-row .row-check {
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--border);
-  border-radius: 6px;
+.list-row .name-col {
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: var(--transition);
-  font-size: 12px;
-}
-.file-row.selected .row-check {
-  background: var(--accent);
-  border-color: var(--accent);
-}
-.file-row .row-icon { font-size: 22px; margin-right: 8px; }
-.file-row .row-info {
-  display: flex;
-  align-items: center;
-  flex: 3;
-  min-width: 0;
   gap: 12px;
+  min-width: 0;
 }
-.file-row .row-name {
-  font-size: 14px;
+.list-row .name-text {
+  font-size: 13px;
   font-weight: 500;
   color: var(--text-primary);
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.file-row .row-size {
-  width: 100px;
-  text-align: right;
-  font-size: 13px;
+.list-row .size-col, .list-row .date-col {
+  font-size: 12px;
   color: var(--text-secondary);
-  flex-shrink: 0;
-}
-.file-row .row-date {
-  width: 160px;
-  font-size: 13px;
-  color: var(--text-secondary);
-  flex-shrink: 0;
 }
 
-/* Empty state */
-.empty-state {
+/* Empty View */
+.empty-view {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 20px;
-  color: var(--text-muted);
+  padding: 100px 20px;
+  color: var(--text-tertiary);
   text-align: center;
 }
-.empty-state .icon { font-size: 64px; margin-bottom: 16px; opacity: 0.5; }
-.empty-state h3 { font-size: 18px; color: var(--text-secondary); margin-bottom: 4px; }
-.empty-state p { font-size: 14px; }
+.empty-view h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-top: 12px;
+}
+.empty-view p { font-size: 13px; margin-top: 4px; }
 
-/* Drag & Drop Overlay */
-.drag-overlay {
+/* Drag Overlay */
+.drop-zone-overlay {
   position: absolute;
-  inset: 0;
-  background: rgba(108,92,231,0.08);
+  inset: 12px;
   border: 2px dashed var(--accent);
-  border-radius: var(--radius);
+  background: var(--accent-soft);
+  border-radius: var(--radius-md);
   display: none;
   align-items: center;
   justify-content: center;
-  z-index: 10;
-  pointer-events: none;
+  z-index: 50;
+  backdrop-filter: blur(10px);
 }
-.drag-overlay.show {
-  display: flex;
-}
-.drag-overlay span {
-  font-size: 18px;
-  color: var(--accent-light);
-  font-weight: 600;
-  background: var(--bg-secondary);
-  padding: 16px 32px;
-  border-radius: var(--radius);
-  border: 1px solid rgba(108,92,231,0.3);
+.drop-zone-overlay.active { display: flex; }
+.drop-zone-overlay .box {
+  background: var(--bg-sidebar);
+  padding: 20px 40px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  text-align: center;
+  box-shadow: var(--shadow-md);
 }
 
 /* ============================================================================
-   CONTEXT MENU
+   CONTEXT MENU (MAC OS FINDER STYLE)
    ============================================================================ */
-.context-menu {
+.apple-menu {
   position: fixed;
-  background: var(--bg-secondary);
+  z-index: 2000;
+  background: rgba(26, 29, 41, 0.9);
+  backdrop-filter: var(--blur-glass);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 6px;
-  min-width: 200px;
-  box-shadow: var(--shadow);
-  z-index: 1000;
+  padding: 5px;
+  min-width: 180px;
+  box-shadow: var(--shadow-md);
   display: none;
-  backdrop-filter: blur(20px);
 }
-.context-menu.show { display: block; }
-.context-menu-item {
+.apple-menu.show { display: block; }
+
+.apple-menu-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
+  justify-content: space-between;
+  padding: 7px 10px;
   border-radius: 6px;
   font-size: 13px;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   cursor: pointer;
   transition: var(--transition);
   border: none;
@@ -700,231 +710,166 @@ body {
   width: 100%;
   text-align: left;
 }
-.context-menu-item:hover {
-  background: var(--bg-card);
-  color: var(--text-primary);
+.apple-menu-item:hover {
+  background: var(--accent);
+  color: #fff;
 }
-.context-menu-item.danger:hover {
-  background: rgba(225,112,85,0.12);
-  color: var(--danger);
+.apple-menu-item.danger:hover {
+  background: var(--system-red);
+  color: #fff;
 }
-.context-menu-item .icon { font-size: 16px; width: 20px; text-align: center; }
-.context-menu-separator {
+.apple-menu-sep {
   height: 1px;
   background: var(--border);
-  margin: 4px 8px;
+  margin: 4px 6px;
 }
 
 /* ============================================================================
-   MODAL
+   MODAL & QUICKLOOK
    ============================================================================ */
-.modal-overlay {
+.modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
-  backdrop-filter: blur(4px);
+  z-index: 3000;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
   display: none;
   align-items: center;
   justify-content: center;
-  z-index: 200;
 }
-.modal-overlay.show { display: flex; }
+.modal-backdrop.show { display: flex; }
 
-.modal {
-  background: var(--bg-secondary);
+.apple-modal {
+  background: var(--bg-sidebar);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 32px;
+  border-radius: var(--radius-md);
   width: 480px;
-  max-width: 90vw;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: var(--shadow);
-  animation: modalIn 0.25s ease;
-}
-@keyframes modalIn {
-  from { opacity: 0; transform: scale(0.95) translateY(10px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-.modal h2 {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 24px;
-}
-
-.modal-actions {
+  max-width: 92vw;
+  max-height: 85vh;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+}
+
+.modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modal-header h3 { font-size: 15px; font-weight: 600; }
+
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
   justify-content: flex-end;
-  margin-top: 24px;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.2);
 }
 
 .btn-secondary {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
-}
-.btn-secondary:hover {
+  padding: 8px 16px;
   background: var(--bg-card-hover);
-  border-color: var(--border-hover);
   color: var(--text-primary);
-}
-
-.btn-danger {
-  background: var(--danger);
-  color: white;
-}
-.btn-danger:hover {
-  background: #d63031;
-}
-
-.upload-dropzone {
-  border: 2px dashed var(--border);
-  border-radius: var(--radius);
-  padding: 32px;
-  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
-  transition: var(--transition);
-  background: var(--bg-glass);
 }
-.upload-dropzone:hover,
-.upload-dropzone.dragover {
-  border-color: var(--accent);
-  background: rgba(108,92,231,0.05);
-}
-.upload-dropzone .icon {
-  font-size: 36px;
-  margin-bottom: 12px;
-}
-.upload-dropzone p {
-  color: var(--text-secondary);
-  font-size: 14px;
-}
-.upload-dropzone .sub {
-  color: var(--text-muted);
+.btn-secondary:hover { background: rgba(255,255,255,0.12); }
+
+/* QuickLook Editor */
+.code-editor {
+  width: 100%;
+  min-height: 280px;
+  background: #08090c;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  padding: 14px;
+  color: #e6edf3;
+  font-family: var(--font-mono);
   font-size: 12px;
-  margin-top: 4px;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
 }
 
-/* ============================================================================
-   TOAST
-   ============================================================================ */
-.toast-container {
+/* Toast */
+.toast-rack {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 300;
+  bottom: 20px;
+  right: 20px;
+  z-index: 4000;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-.toast {
-  background: var(--bg-secondary);
+.apple-toast {
+  padding: 10px 18px;
+  background: rgba(28, 30, 43, 0.95);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 12px 20px;
-  font-size: 14px;
+  border-radius: var(--radius-full);
+  backdrop-filter: blur(20px);
   color: var(--text-primary);
-  box-shadow: var(--shadow);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  animation: toastIn 0.3s ease;
-  min-width: 250px;
-  backdrop-filter: blur(12px);
-}
-.toast.success { border-left: 3px solid var(--success); }
-.toast.error { border-left: 3px solid var(--danger); }
-.toast.info { border-left: 3px solid var(--info); }
-@keyframes toastIn {
-  from { opacity: 0; transform: translateX(20px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-/* ============================================================================
-   PREVIEW / EDITOR
-   ============================================================================ */
-.preview-modal .modal {
-  width: 700px;
-  max-height: 85vh;
-}
-.preview-content {
-  background: rgba(0,0,0,0.3);
-  border-radius: var(--radius-sm);
-  padding: 16px;
-  overflow: auto;
-  max-height: 50vh;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
   font-size: 13px;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  color: var(--text-secondary);
-}
-.preview-image {
-  max-width: 100%;
-  max-height: 60vh;
-  border-radius: var(--radius-sm);
-  display: block;
-  margin: 0 auto;
-}
-
-/* ============================================================================
-   LOADING
-   ============================================================================ */
-.loading-spinner {
+  font-weight: 500;
+  box-shadow: var(--shadow-md);
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 60px;
+  gap: 8px;
+  animation: toastSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.spinner {
-  width: 32px; height: 32px;
-  border: 3px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+@keyframes toastSlide {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
-@keyframes spin { to { transform: rotate(360deg); } }
 
-/* ============================================================================
-   RESPONSIVE
-   ============================================================================ */
 @media (max-width: 768px) {
   .sidebar { display: none; }
-  .toolbar { padding: 12px 16px; }
-  .file-area { padding: 12px 16px; }
-  .file-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
-  .file-row .row-date { display: none; }
-  .search-box { min-width: 140px; }
-  .login-box { padding: 32px 24px; }
+  .toolbar { padding: 0 12px; }
+  .search-bar { width: 130px; }
+  .search-bar:focus-within { width: 160px; }
 }
 </style>
 </head>
 <body>
-<div class="bg-animated"></div>
+
+<div class="bg-glow">
+  <div class="bg-glow-1"></div>
+  <div class="bg-glow-2"></div>
+</div>
 
 <!-- ========================================================================
      LOGIN
      ======================================================================== -->
-<div class="login-container" id="loginContainer">
-  <div class="login-box">
-    <div class="login-logo">
-      <div class="logo-icon">📁</div>
-      <h1>NovaDrive</h1>
-      <p>Gerenciador de Arquivos Moderno</p>
+<div class="login-wrapper" id="loginScreen">
+  <div class="login-card">
+    <div class="login-brand">
+      <svg class="svg-icon xl" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
     </div>
+    <h1>NovaDrive</h1>
+    <p>Acesse seus arquivos com facilidade</p>
     <form id="loginForm">
-      <div class="form-group">
+      <div class="field">
         <label>Usuário</label>
-        <input type="text" id="loginUser" placeholder="Digite seu usuário" autocomplete="username" required>
+        <input type="text" id="loginUser" value="admin" required autocomplete="username">
       </div>
-      <div class="form-group">
+      <div class="field">
         <label>Senha</label>
-        <input type="password" id="loginPass" placeholder="Digite sua senha" autocomplete="current-password" required>
+        <input type="password" id="loginPass" value="admin" required autocomplete="current-password">
       </div>
-      <button type="submit" class="btn btn-primary" id="loginBtn">Entrar</button>
-      <div class="login-error" id="loginError">Usuário ou senha inválidos</div>
+      <button type="submit" class="btn-apple" id="loginBtn">Entrar</button>
+      <div class="login-err" id="loginErr"></div>
     </form>
   </div>
 </div>
@@ -932,138 +877,179 @@ body {
 <!-- ========================================================================
      APP LAYOUT
      ======================================================================== -->
-<div class="app-layout" id="appLayout">
-  <!-- Sidebar -->
+<div class="app-container">
+  <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="logo-small">📁</div>
-      <h2>NovaDrive</h2>
-      <span class="user-badge" id="userBadge">admin</span>
+    <div class="window-controls">
+      <div class="traffic-dot traffic-close"></div>
+      <div class="traffic-dot traffic-min"></div>
+      <div class="traffic-dot traffic-max"></div>
     </div>
 
-    <button class="sidebar-item active" onclick="navigateTo('/')">
-      <span class="icon">📂</span> Meus Arquivos
-    </button>
-    <button class="sidebar-item" onclick="openUpload()">
-      <span class="icon">📤</span> Upload
-    </button>
-    <button class="sidebar-item" onclick="navigateTo('/.trash')">
-      <span class="icon">🗑️</span> Lixeira
-    </button>
-
-    <div class="sidebar-section">Ações</div>
-    <button class="sidebar-item" onclick="createFolder()">
-      <span class="icon">📁</span> Nova Pasta
-    </button>
-    <button class="sidebar-item" onclick="toggleView()" id="viewToggle">
-      <span class="icon">📋</span> Alternar Visualização
-    </button>
-
-    <div class="sidebar-storage">
-      <div class="storage-label">
-        <span>Armazenamento</span>
-        <span id="storageText">—</span>
+    <div>
+      <div class="nav-section-title">Locais</div>
+      <div class="nav-group">
+        <button class="nav-btn active" onclick="navigateTo('/')">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+          Todos os Arquivos
+        </button>
+        <button class="nav-btn" onclick="navigateTo('/.trash')">
+          <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          Lixeira
+        </button>
       </div>
-      <div class="storage-bar">
-        <div class="storage-bar-fill" id="storageBar" style="width:0%"></div>
+    </div>
+
+    <div>
+      <div class="nav-section-title">Ações</div>
+      <div class="nav-group">
+        <button class="nav-btn" onclick="promptFolder()">
+          <svg class="svg-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Nova Pasta
+        </button>
+        <button class="nav-btn" onclick="openUploadModal()">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          Upload
+        </button>
+      </div>
+    </div>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="storage-widget">
+      <div class="storage-info">
+        <span>Disco</span>
+        <span id="storageLabel">—</span>
+      </div>
+      <div class="storage-track">
+        <div class="storage-fill" id="storageMeter" style="width: 0%"></div>
       </div>
     </div>
   </aside>
 
-  <!-- Main Content -->
-  <main class="main-content">
-    <!-- Toolbar -->
-    <div class="toolbar">
+  <!-- MAIN CONTENT AREA -->
+  <main class="content-area">
+    <!-- TOOLBAR -->
+    <header class="toolbar">
       <div class="toolbar-left">
-        <button class="btn-icon" onclick="goBack()" title="Voltar">←</button>
-        <div class="breadcrumb" id="breadcrumb">
-          <a class="root" onclick="navigateTo('/')">🏠</a>
+        <button class="btn-icon-soft" onclick="goBack()" title="Voltar">
+          <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <div class="breadcrumb-trail" id="breadcrumbTrail">
+          <div class="breadcrumb-item active" onclick="navigateTo('/')">
+            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+            Início
+          </div>
         </div>
       </div>
-      <div class="toolbar-right">
-        <div class="search-box">
-          <span class="icon">🔍</span>
-          <input type="text" id="searchInput" placeholder="Buscar arquivos..." oninput="searchFiles(this.value)">
-        </div>
-      </div>
-    </div>
 
-    <!-- File Area -->
-    <div class="file-area" id="fileArea"
-         ondragover="event.preventDefault(); event.currentTarget.closest('.main-content').querySelector('.drag-overlay').classList.add('show')"
-         ondragleave="event.currentTarget.closest('.main-content').querySelector('.drag-overlay').classList.remove('show')"
+      <div class="toolbar-right">
+        <div class="search-bar">
+          <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" placeholder="Buscar..." oninput="handleSearch(this.value)">
+        </div>
+
+        <div class="segmented-control">
+          <button class="segmented-btn active" id="btnGrid" onclick="setView('grid')">
+            <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          </button>
+          <button class="segmented-btn" id="btnList" onclick="setView('list')">
+            <svg class="svg-icon" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+          </button>
+        </div>
+
+        <button class="btn-action-primary" onclick="openUploadModal()">
+          <svg class="svg-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Upload
+        </button>
+      </div>
+    </header>
+
+    <!-- VIEWPORT -->
+    <div class="viewport" id="viewport"
+         ondragover="event.preventDefault(); document.getElementById('dropOverlay').classList.add('active')"
+         ondragleave="document.getElementById('dropOverlay').classList.remove('active')"
          ondrop="handleDrop(event)">
-      <div class="drag-overlay"><span>📥 Solte os arquivos aqui</span></div>
+      
+      <div class="drop-zone-overlay" id="dropOverlay">
+        <div class="box">
+          <svg class="svg-icon xl" viewBox="0 0 24 24" style="color:var(--accent)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          <p style="margin-top:10px;font-weight:600">Solte os arquivos para fazer upload</p>
+        </div>
+      </div>
+
       <div id="fileContainer"></div>
     </div>
   </main>
 </div>
 
 <!-- ========================================================================
-     TOASTS
-     ======================================================================== -->
-<div class="toast-container" id="toastContainer"></div>
-
-<!-- ========================================================================
      CONTEXT MENU
      ======================================================================== -->
-<div class="context-menu" id="contextMenu">
-  <button class="context-menu-item" data-action="download"><span class="icon">⬇️</span> Download</button>
-  <button class="context-menu-item" data-action="rename"><span class="icon">✏️</span> Renomear</button>
-  <button class="context-menu-item" data-action="copy"><span class="icon">📋</span> Copiar</button>
-  <button class="context-menu-item" data-action="move"><span class="icon">✂️</span> Mover</button>
-  <div class="context-menu-separator"></div>
-  <button class="context-menu-item" data-action="preview"><span class="icon">👁️</span> Visualizar</button>
-  <button class="context-menu-separator"></button>
-  <button class="context-menu-item danger" data-action="delete"><span class="icon">🗑️</span> Excluir</button>
+<div class="apple-menu" id="appleMenu">
+  <button class="apple-menu-item" onclick="triggerAction('download')">
+    <span>Download</span>
+    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+  </button>
+  <button class="apple-menu-item" onclick="triggerAction('preview')">
+    <span>Visualizar / Editar</span>
+    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+  </button>
+  <button class="apple-menu-item" onclick="triggerAction('rename')">
+    <span>Renomear</span>
+    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+  </button>
+  <div class="apple-menu-sep"></div>
+  <button class="apple-menu-item danger" onclick="triggerAction('delete')">
+    <span>Excluir</span>
+    <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+  </button>
 </div>
 
 <!-- ========================================================================
-     MODAL
+     MODAL BACKDROP
      ======================================================================== -->
-<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
-  <div class="modal" id="modalContent"></div>
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="apple-modal" id="modalWindow"></div>
 </div>
+
+<!-- TOAST RACK -->
+<div class="toast-rack" id="toastRack"></div>
 
 <script>
 // ============================================================================
-// STATE
+// STATE & API
 // ============================================================================
 const state = {
   token: null,
   user: null,
   currentPath: '/',
-  currentItems: [],
+  items: [],
   selected: new Set(),
   viewMode: 'grid',
-  searchTerm: '',
-  clipboard: null,
-  contextPath: null,
-  storage: { total: 0, used: 0 },
+  searchQuery: '',
+  activeItem: null,
 };
 
 const API = window.location.origin + '/api';
 
-// ============================================================================
-// API HELPERS
-// ============================================================================
-async function api(method, path, body = null) {
+async function fetchApi(method, path, body = null) {
   const opts = {
     method,
-    headers: { 'Authorization': `Bearer ${state.token}` },
+    headers: { 'Authorization': `Bearer ${state.token}` }
   };
   if (body instanceof FormData) {
     opts.body = body;
   } else if (body) {
-    opts.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-    opts.body = new URLSearchParams(body);
+    opts.headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(body);
   }
   const res = await fetch(API + path, opts);
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
     throw new Error(err.detail || 'Erro na requisição');
   }
-  return (res.headers.get('content-type') || '').includes('json') ? res.json() : res;
+  return res.json().catch(() => ({}));
 }
 
 // ============================================================================
@@ -1072,9 +1058,9 @@ async function api(method, path, body = null) {
 document.getElementById('loginForm').onsubmit = async (e) => {
   e.preventDefault();
   const btn = document.getElementById('loginBtn');
-  const err = document.getElementById('loginError');
+  const err = document.getElementById('loginErr');
   btn.disabled = true;
-  btn.textContent = 'Entrando...';
+  btn.textContent = 'Autenticando...';
   err.classList.remove('show');
 
   try {
@@ -1088,21 +1074,18 @@ document.getElementById('loginForm').onsubmit = async (e) => {
       body: JSON.stringify(payload)
     });
     if (!res.ok) {
-      const errData = await res.json().catch(() => ({ detail: res.statusText }));
-      throw new Error(errData.detail || 'Usuário ou senha inválidos');
+      const data = await res.json().catch(() => ({ detail: 'Credenciais inválidas' }));
+      throw new Error(data.detail || 'Falha no login');
     }
     const data = await res.json();
     state.token = data.token;
     state.user = data.user;
 
-    document.getElementById('loginContainer').classList.add('hidden');
-    document.getElementById('appLayout').classList.add('show');
-    document.getElementById('userBadge').textContent = data.user.role;
-    
+    document.getElementById('loginScreen').classList.add('hidden');
     loadFiles('/');
     loadStorage();
-  } catch (e) {
-    err.textContent = e.message || 'Usuário ou senha inválidos';
+  } catch (ex) {
+    err.textContent = ex.message;
     err.classList.add('show');
   } finally {
     btn.disabled = false;
@@ -1111,29 +1094,101 @@ document.getElementById('loginForm').onsubmit = async (e) => {
 };
 
 // ============================================================================
-// FILE NAVIGATION
+// FILE NAVIGATION & RENDER
 // ============================================================================
 async function loadFiles(path) {
   state.currentPath = path;
   state.selected.clear();
   const container = document.getElementById('fileContainer');
-  container.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+  container.innerHTML = '<div class="empty-view"><p>Carregando arquivos...</p></div>';
 
   try {
     const params = new URLSearchParams({ path });
-    if (state.searchTerm) params.set('search', state.searchTerm);
-    const data = await api('GET', '/files?' + params);
-    state.currentItems = data.items;
-    renderFiles(data);
+    if (state.searchQuery) params.set('search', state.searchQuery);
+    const data = await fetchApi('GET', '/files?' + params);
+    state.items = data.items;
+    renderViewport(data);
     renderBreadcrumbs(data.breadcrumbs);
   } catch (e) {
-    container.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><h3>Erro ao carregar</h3><p>${e.message}</p></div>`;
+    container.innerHTML = `<div class="empty-view"><h3>Erro ao carregar</h3><p>${e.message}</p></div>`;
+  }
+}
+
+function renderViewport(data) {
+  const container = document.getElementById('fileContainer');
+  if (!data.items || data.items.length === 0) {
+    container.innerHTML = `
+      <div class="empty-view">
+        <svg class="svg-icon xl" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+        <h3>Esta pasta está vazia</h3>
+        <p>Arraste arquivos ou clique em Upload</p>
+      </div>
+    `;
+    return;
+  }
+
+  if (state.viewMode === 'grid') {
+    container.innerHTML = `<div class="file-grid">${data.items.map(item => `
+      <div class="grid-card ${state.selected.has(item.path) ? 'selected' : ''}"
+           onclick="selectItem('${item.path}', event)"
+           ondblclick="${item.is_dir ? `navigateTo('${item.path}')` : `openPreview('${item.path}')`}"
+           oncontextmenu="openContextMenu(event, '${item.path}')">
+        <div class="icon-wrapper ${item.icon}">
+          ${getIconSvg(item)}
+        </div>
+        <div class="title" title="${item.name}">${item.name}</div>
+        <div class="meta">${item.is_dir ? 'Pasta' : item.size_formatted}</div>
+      </div>
+    `).join('')}</div>`;
+  } else {
+    container.innerHTML = `
+      <div class="file-list">
+        <div class="list-header">
+          <div>Nome</div>
+          <div>Tamanho</div>
+          <div>Modificado</div>
+          <div></div>
+        </div>
+        ${data.items.map(item => `
+          <div class="list-row ${state.selected.has(item.path) ? 'selected' : ''}"
+               onclick="selectItem('${item.path}', event)"
+               ondblclick="${item.is_dir ? `navigateTo('${item.path}')` : `openPreview('${item.path}')`}"
+               oncontextmenu="openContextMenu(event, '${item.path}')">
+            <div class="name-col">
+              <span class="icon-wrapper ${item.icon}">${getIconSvg(item)}</span>
+              <span class="name-text">${item.name}</span>
+            </div>
+            <div class="size-col">${item.is_dir ? '—' : item.size_formatted}</div>
+            <div class="date-col">${formatDate(item.modified)}</div>
+            <div></div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+}
+
+function renderBreadcrumbs(crumbs) {
+  const trail = document.getElementById('breadcrumbTrail');
+  trail.innerHTML = `
+    <div class="breadcrumb-item ${state.currentPath === '/' ? 'active' : ''}" onclick="navigateTo('/')">
+      <svg class="svg-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+      Início
+    </div>
+  `;
+  if (crumbs) {
+    crumbs.forEach((c, idx) => {
+      const isActive = idx === crumbs.length - 1;
+      trail.innerHTML += `
+        <span class="breadcrumb-sep">/</span>
+        <div class="breadcrumb-item ${isActive ? 'active' : ''}" onclick="navigateTo('${c.path}')">${c.name}</div>
+      `;
+    });
   }
 }
 
 function navigateTo(path) {
-  state.searchTerm = '';
-  document.getElementById('searchInput').value = '';
+  state.searchQuery = '';
   loadFiles(path);
 }
 
@@ -1144,492 +1199,325 @@ function goBack() {
 }
 
 // ============================================================================
-// RENDER
+// SVG MAPPER
 // ============================================================================
-function renderFiles(data) {
-  const container = document.getElementById('fileContainer');
-  
-  if (data.items.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="icon">📂</div>
-        <h3>Pasta vazia</h3>
-        <p>Arraste arquivos para cá ou use o botão Upload</p>
-      </div>
-    `;
-    return;
+function getIconSvg(item) {
+  if (item.is_dir) {
+    return `<svg class="svg-icon lg" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>`;
   }
-
-  if (state.viewMode === 'grid') {
-    renderGrid(data.items);
-  } else {
-    renderList(data.items);
+  const type = item.icon;
+  if (type === 'image') {
+    return `<svg class="svg-icon lg" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>`;
   }
-}
-
-function renderGrid(items) {
-  const container = document.getElementById('fileContainer');
-  container.innerHTML = `<div class="file-grid">${items.map(item => `
-    <div class="file-card${state.selected.has(item.path) ? ' selected' : ''}"
-         data-path="${item.path}"
-         ondblclick="${item.is_dir ? `navigateTo('${item.path}')` : `previewFile('${item.path}')`}"
-         onclick="toggleSelect('${item.path}', event)"
-         oncontextmenu="showContextMenu(event, '${item.path}')">
-      <div class="file-checkbox">✓</div>
-      <div class="file-icon">${iconFor(item)}</div>
-      <div class="file-name">${item.name}</div>
-      ${item.size_formatted ? `<div class="file-size">${item.size_formatted}</div>` : ''}
-    </div>
-  `).join('')}</div>`;
-}
-
-function renderList(items) {
-  const container = document.getElementById('fileContainer');
-  container.innerHTML = `
-    <div class="file-list-view">
-      <div class="file-list-header">
-        <div class="col-check"></div>
-        <div class="col-name" onclick="sortBy('name')">Nome</div>
-        <div class="col-size" onclick="sortBy('size')">Tamanho</div>
-        <div class="col-date" onclick="sortBy('date')">Modificado</div>
-      </div>
-      ${items.map(item => `
-        <div class="file-row${state.selected.has(item.path) ? ' selected' : ''}"
-             data-path="${item.path}"
-             ondblclick="${item.is_dir ? `navigateTo('${item.path}')` : `previewFile('${item.path}')`}"
-             onclick="toggleSelect('${item.path}', event)"
-             oncontextmenu="showContextMenu(event, '${item.path}')">
-          <div class="row-check">${state.selected.has(item.path) ? '✓' : ''}</div>
-          <div class="row-info">
-            <span class="row-icon">${iconFor(item)}</span>
-            <span class="row-name">${item.name}</span>
-          </div>
-          <div class="row-size">${item.size_formatted || '—'}</div>
-          <div class="row-date">${formatDate(item.modified)}</div>
-        </div>
-      `).join('')}
-    </div>
-  `;
-}
-
-function renderBreadcrumbs(crumbs) {
-  const el = document.getElementById('breadcrumb');
-  el.innerHTML = '<a class="root" onclick="navigateTo(\'/\')">🏠</a>';
-  crumbs.forEach(c => {
-    el.innerHTML += `<span class="separator">›</span><a onclick="navigateTo('${c.path}')">${c.name}</a>`;
-  });
-}
-
-// ============================================================================
-// ICONS
-// ============================================================================
-function iconFor(item) {
-  if (item.is_dir) return '📁';
-  const map = {
-    image: '🖼️', video: '🎬', audio: '🎵', pdf: '📄',
-    document: '📝', spreadsheet: '📊', archive: '📦', code: '💻',
-    text: '📃', binary: '⚙️', disc: '💿', download: '🧲',
-  };
-  return map[item.icon] || '📄';
+  if (type === 'video') {
+    return `<svg class="svg-icon lg" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>`;
+  }
+  if (type === 'audio') {
+    return `<svg class="svg-icon lg" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>`;
+  }
+  if (type === 'code') {
+    return `<svg class="svg-icon lg" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>`;
+  }
+  if (type === 'archive') {
+    return `<svg class="svg-icon lg" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>`;
+  }
+  return `<svg class="svg-icon lg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>`;
 }
 
 function formatDate(iso) {
   if (!iso) return '';
   const d = new Date(iso);
-  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
 // ============================================================================
-// SELECTION
+// SELECTION & VIEW MODE
 // ============================================================================
-function toggleSelect(path, event) {
-  if (event.ctrlKey || event.metaKey) {
+function selectItem(path, evt) {
+  if (evt.ctrlKey || evt.metaKey) {
     if (state.selected.has(path)) state.selected.delete(path);
     else state.selected.add(path);
   } else {
     state.selected.clear();
     state.selected.add(path);
   }
-  renderFiles({ items: state.currentItems, breadcrumbs: [] });
+  renderViewport({ items: state.items });
 }
 
-// ============================================================================
-// SEARCH
-// ============================================================================
-let searchTimeout;
-function searchFiles(term) {
-  clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    state.searchTerm = term;
+function setView(mode) {
+  state.viewMode = mode;
+  document.getElementById('btnGrid').classList.toggle('active', mode === 'grid');
+  document.getElementById('btnList').classList.toggle('active', mode === 'list');
+  renderViewport({ items: state.items });
+}
+
+let searchTimer;
+function handleSearch(val) {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    state.searchQuery = val;
     loadFiles(state.currentPath);
   }, 300);
 }
 
 // ============================================================================
-// VIEW TOGGLE
-// ============================================================================
-function toggleView() {
-  state.viewMode = state.viewMode === 'grid' ? 'list' : 'grid';
-  document.getElementById('viewToggle').innerHTML = `<span class="icon">${state.viewMode === 'grid' ? '📋' : '📱'}</span> ${state.viewMode === 'grid' ? 'Lista' : 'Grade'}`;
-  renderFiles({ items: state.currentItems, breadcrumbs: [] });
-}
-
-// ============================================================================
 // CONTEXT MENU
 // ============================================================================
-function showContextMenu(event, path) {
-  event.preventDefault();
-  state.contextPath = path;
+function openContextMenu(e, path) {
+  e.preventDefault();
+  state.activeItem = path;
   if (!state.selected.has(path)) {
     state.selected.clear();
     state.selected.add(path);
-    renderFiles({ items: state.currentItems, breadcrumbs: [] });
+    renderViewport({ items: state.items });
   }
-  const menu = document.getElementById('contextMenu');
-  menu.style.left = event.clientX + 'px';
-  menu.style.top = event.clientY + 'px';
+  const menu = document.getElementById('appleMenu');
+  menu.style.left = e.clientX + 'px';
+  menu.style.top = e.clientY + 'px';
   menu.classList.add('show');
 }
 
 document.addEventListener('click', () => {
-  document.getElementById('contextMenu').classList.remove('show');
+  document.getElementById('appleMenu').classList.remove('show');
 });
 
-document.getElementById('contextMenu').querySelectorAll('.context-menu-item').forEach(item => {
-  item.onclick = () => {
-    const action = item.dataset.action;
-    const paths = state.selected.size > 1 ? Array.from(state.selected) : [state.contextPath || state.selected.values().next().value];
-    if (paths.length === 0) return;
-    switch (action) {
-      case 'download': paths.forEach(p => downloadFile(p)); break;
-      case 'rename': renameFile(paths[0]); break;
-      case 'delete': deleteFiles(paths); break;
-      case 'copy': state.clipboard = { action: 'copy', paths }; toast('📋 ' + paths.length + ' item(ns) copiado(s)', 'info'); break;
-      case 'move': state.clipboard = { action: 'move', paths }; toast('✂️ ' + paths.length + ' item(ns) pronto(s) para mover', 'info'); break;
-      case 'preview': previewFile(paths[0]); break;
-    }
-    document.getElementById('contextMenu').classList.remove('show');
-  };
-});
+function triggerAction(action) {
+  const path = state.activeItem;
+  if (!path) return;
+  if (action === 'download') {
+    window.open(`${API}/files/download?path=${encodeURIComponent(path)}&token=${state.token}`, '_blank');
+  } else if (action === 'preview') {
+    openPreview(path);
+  } else if (action === 'rename') {
+    promptRename(path);
+  } else if (action === 'delete') {
+    confirmDelete(path);
+  }
+}
 
 // ============================================================================
-// ACTIONS
+// MODAL ACTIONS
 // ============================================================================
-function openUpload() {
+function openUploadModal() {
   showModal(`
-    <h2>📤 Upload de Arquivos</h2>
-    <div class="upload-dropzone" id="dropzone"
-         ondragover="event.preventDefault(); this.classList.add('dragover')"
-         ondragleave="this.classList.remove('dragover')"
-         ondrop="event.preventDefault(); this.classList.remove('dragover'); uploadFiles(event.dataTransfer.files)"
-         onclick="document.getElementById('fileInput').click()">
-      <div class="icon">📥</div>
-      <p>Arraste arquivos para cá ou clique para selecionar</p>
-      <div class="sub">Múltiplos arquivos suportados</div>
-      <input type="file" id="fileInput" multiple hidden onchange="uploadFiles(this.files)">
+    <div class="modal-header">
+      <h3>Upload de Arquivos</h3>
     </div>
-    <div id="uploadProgress" style="margin-top:16px"></div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+    <div class="modal-body">
+      <div style="border:2px dashed var(--border);border-radius:var(--radius-sm);padding:40px;text-align:center;cursor:pointer"
+           onclick="document.getElementById('modalFileInput').click()">
+        <svg class="svg-icon xl" viewBox="0 0 24 24" style="color:var(--accent);margin-bottom:12px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+        <p style="font-size:14px;font-weight:600">Clique ou arraste arquivos para enviar</p>
+        <input type="file" id="modalFileInput" multiple hidden onchange="doUpload(this.files)">
+      </div>
+      <div id="uploadStatus" style="margin-top:16px;font-size:13px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal()">Fechar</button>
     </div>
   `);
 }
 
-async function uploadFiles(files) {
-  const progress = document.getElementById('uploadProgress');
+async function doUpload(files) {
+  const status = document.getElementById('uploadStatus');
   const form = new FormData();
   form.append('path', state.currentPath);
   for (const f of files) form.append('files', f);
-  
-  progress.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div><p style="text-align:center;color:var(--text-secondary)">Enviando...</p>';
-  
+
+  status.innerHTML = '<p style="color:var(--accent)">Enviando arquivos...</p>';
   try {
-    const data = await api('POST', '/files/upload', form);
-    progress.innerHTML = `<p style="color:var(--success)">✅ ${data.uploaded} arquivo(s) enviado(s)${data.failed ? `, ${data.failed} erro(s)` : ''}</p>`;
-    setTimeout(() => { closeModal(); loadFiles(state.currentPath); }, 1500);
+    const data = await fetchApi('POST', '/files/upload', form);
+    status.innerHTML = `<p style="color:var(--system-green)">✅ ${data.uploaded} arquivo(s) enviado(s) com sucesso!</p>`;
+    setTimeout(() => { closeModal(); loadFiles(state.currentPath); }, 1200);
   } catch (e) {
-    progress.innerHTML = `<p style="color:var(--danger)">❌ ${e.message}</p>`;
+    status.innerHTML = `<p style="color:var(--system-red)">❌ ${e.message}</p>`;
   }
 }
 
-function handleDrop(event) {
-  event.preventDefault();
-  document.querySelector('.drag-overlay').classList.remove('show');
-  if (event.dataTransfer.files.length > 0) {
-    openUpload();
-    // Auto-set files
-    setTimeout(() => {
-      const input = document.getElementById('fileInput');
-      if (input) {
-        const dt = new DataTransfer();
-        for (const f of event.dataTransfer.files) dt.items.add(f);
-        input.files = dt.files;
-        uploadFiles(dt.files);
-      }
-    }, 100);
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropOverlay').classList.remove('active');
+  if (e.dataTransfer.files.length > 0) {
+    openUploadModal();
+    setTimeout(() => doUpload(e.dataTransfer.files), 100);
   }
 }
 
-function createFolder() {
+function promptFolder() {
   showModal(`
-    <h2>📁 Nova Pasta</h2>
-    <div class="form-group">
-      <label>Nome da pasta</label>
-      <input type="text" id="folderName" placeholder="Ex: Documentos" autofocus>
+    <div class="modal-header">
+      <h3>Nova Pasta</h3>
     </div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="doCreateFolder()">Criar</button>
+    <div class="modal-body">
+      <div class="field">
+        <label>Nome da pasta</label>
+        <input type="text" id="newFolderName" placeholder="Nova pasta" autofocus>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn-apple" style="width:auto;padding:8px 16px" onclick="createFolder()">Criar</button>
     </div>
   `);
-  setTimeout(() => document.getElementById('folderName')?.focus(), 100);
+  setTimeout(() => document.getElementById('newFolderName')?.focus(), 100);
 }
 
-async function doCreateFolder() {
-  const name = document.getElementById('folderName').value.trim();
+async function createFolder() {
+  const name = document.getElementById('newFolderName').value.trim();
   if (!name) return;
   try {
-    await api('POST', '/files/folder', { path: state.currentPath, name });
+    const form = new FormData();
+    form.append('path', state.currentPath);
+    form.append('name', name);
+    await fetchApi('POST', '/files/folder', form);
     closeModal();
-    toast(`📁 Pasta "${name}" criada`, 'success');
+    toast('Pasta criada com sucesso');
     loadFiles(state.currentPath);
   } catch (e) {
-    toast(`❌ ${e.message}`, 'error');
+    toast(e.message, 'error');
   }
 }
 
-function renameFile(path) {
-  const item = state.currentItems.find(i => i.path === path);
-  if (!item) return;
+function promptRename(path) {
+  const item = state.items.find(i => i.path === path);
   showModal(`
-    <h2>✏️ Renomear</h2>
-    <div class="form-group">
-      <label>Novo nome</label>
-      <input type="text" id="renameInput" value="${item.name}" autofocus>
+    <div class="modal-header">
+      <h3>Renomear</h3>
     </div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="doRename('${path}')">Renomear</button>
+    <div class="modal-body">
+      <div class="field">
+        <label>Novo nome</label>
+        <input type="text" id="renameValue" value="${item ? item.name : ''}">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn-apple" style="width:auto;padding:8px 16px" onclick="executeRename('${path}')">Salvar</button>
     </div>
   `);
-  setTimeout(() => {
-    const inp = document.getElementById('renameInput');
-    inp?.focus();
-    inp?.select();
-  }, 100);
 }
 
-async function doRename(path) {
-  const name = document.getElementById('renameInput').value.trim();
+async function executeRename(path) {
+  const name = document.getElementById('renameValue').value.trim();
   if (!name) return;
   try {
-    await api('PUT', '/files/rename', { path, new_name: name });
+    const form = new FormData();
+    form.append('path', path);
+    form.append('new_name', name);
+    await fetchApi('PUT', '/files/rename', form);
     closeModal();
-    toast(`✏️ Renomeado para "${name}"`, 'success');
+    toast('Item renomeado');
     loadFiles(state.currentPath);
   } catch (e) {
-    toast(`❌ ${e.message}`, 'error');
+    toast(e.message, 'error');
   }
 }
 
-function deleteFiles(paths) {
-  const count = paths.length;
-  const isPermanent = state.currentPath === '/.trash';
+function confirmDelete(path) {
   showModal(`
-    <h2>${isPermanent ? '🗑️ Excluir Permanentemente' : '🗑️ Mover para Lixeira'}</h2>
-    <p style="color:var(--text-secondary);line-height:1.5">
-      ${isPermanent 
-        ? `Tem certeza que deseja excluir permanentemente <strong>${count}</strong> item(ns)? Esta ação não pode ser desfeita.`
-        : `Mover <strong>${count}</strong> item(ns) para a lixeira?`}
-    </p>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-danger" onclick="doDelete('${paths.join(',')}', ${isPermanent})">${isPermanent ? 'Excluir' : 'Mover para Lixeira'}</button>
+    <div class="modal-header">
+      <h3>Confirmar exclusão</h3>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:14px;color:var(--text-secondary)">Tem certeza que deseja mover este item para a lixeira?</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn-apple" style="width:auto;padding:8px 16px;background:var(--system-red)" onclick="executeDelete('${path}')">Excluir</button>
     </div>
   `);
 }
 
-async function doDelete(pathsStr, permanent) {
-  const paths = pathsStr.split(',');
+async function executeDelete(path) {
   try {
-    for (const p of paths) {
-      await api('DELETE', `/files?path=${encodeURIComponent(p)}&permanent=${permanent}`);
-    }
+    await fetchApi('DELETE', `/files?path=${encodeURIComponent(path)}`);
     closeModal();
-    toast(`🗑️ ${paths.length} item(ns) ${permanent ? 'excluído(s)' : 'movido(s) para lixeira'}`, 'success');
+    toast('Item movido para a lixeira');
     loadFiles(state.currentPath);
   } catch (e) {
-    toast(`❌ ${e.message}`, 'error');
+    toast(e.message, 'error');
   }
 }
 
-function downloadFile(path) {
-  window.open(API + '/files/download?path=' + encodeURIComponent(path) + '&token=' + state.token, '_blank');
-}
-
-async function previewFile(path) {
-  const item = state.currentItems.find(i => i.path === path);
+async function openPreview(path) {
+  const item = state.items.find(i => i.path === path);
   if (!item) return;
-  
-  // Image preview
-  if (['image'].includes(item.icon)) {
+
+  if (item.icon === 'image') {
     showModal(`
-      <h2>${item.name}</h2>
-      <img class="preview-image" src="${API}/files/download?path=${encodeURIComponent(path)}&token=${state.token}" alt="${item.name}">
-      <div class="modal-actions">
-        <button class="btn btn-secondary" onclick="closeModal()">Fechar</button>
-        <button class="btn btn-primary" onclick="downloadFile('${path}')">⬇️ Download</button>
+      <div class="modal-header">
+        <h3>${item.name}</h3>
+      </div>
+      <div class="modal-body" style="text-align:center">
+        <img src="${API}/files/download?path=${encodeURIComponent(path)}&token=${state.token}" style="max-width:100%;max-height:60vh;border-radius:var(--radius-sm)">
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal()">Fechar</button>
       </div>
     `);
     return;
   }
 
-  // Text preview
   try {
-    const data = await api('GET', '/files/preview?path=' + encodeURIComponent(path));
+    const data = await fetchApi('GET', '/files/preview?path=' + encodeURIComponent(path));
     showModal(`
-      <div class="preview-modal">
-        <h2>${item.name}</h2>
-        <div class="preview-content">${escapeHtml(data.content)}</div>
-        <div class="modal-actions">
-          <button class="btn btn-secondary" onclick="closeModal()">Fechar</button>
-          <button class="btn btn-primary" onclick="editFile('${path}')">✏️ Editar</button>
-          <button class="btn btn-primary" onclick="downloadFile('${path}')">⬇️ Download</button>
-        </div>
+      <div class="modal-header">
+        <h3>${item.name}</h3>
+      </div>
+      <div class="modal-body">
+        <textarea class="code-editor" id="codeContent">${escapeHtml(data.content)}</textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+        <button class="btn-apple" style="width:auto;padding:8px 16px" onclick="saveCode('${path}')">Salvar</button>
       </div>
     `);
   } catch (e) {
-    // Download as fallback
-    downloadFile(path);
+    window.open(`${API}/files/download?path=${encodeURIComponent(path)}&token=${state.token}`, '_blank');
   }
 }
 
-async function editFile(path) {
+async function saveCode(path) {
+  const content = document.getElementById('codeContent').value;
   try {
-    const data = await api('GET', '/files/preview?path=' + encodeURIComponent(path));
-    showModal(`
-      <h2>✏️ Editando: ${data.name}</h2>
-      <textarea id="editorContent" style="width:100%;min-height:300px;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;color:var(--text-primary);font-family:monospace;font-size:13px;resize:vertical">${escapeHtml(data.content)}</textarea>
-      <div class="modal-actions">
-        <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
-        <button class="btn btn-primary" onclick="saveFile('${path}')">💾 Salvar</button>
-      </div>
-    `);
-  } catch (e) {
-    toast(`❌ ${e.message}`, 'error');
-  }
-}
-
-async function saveFile(path) {
-  const content = document.getElementById('editorContent').value;
-  try {
-    await api('PUT', '/files/save', { path, content });
+    const form = new FormData();
+    form.append('path', path);
+    form.append('content', content);
+    await fetchApi('PUT', '/files/save', form);
     closeModal();
-    toast('💾 Arquivo salvo!', 'success');
+    toast('Arquivo salvo');
   } catch (e) {
-    toast(`❌ ${e.message}`, 'error');
+    toast(e.message, 'error');
   }
 }
 
-// ============================================================================
-// STORAGE
-// ============================================================================
 async function loadStorage() {
   try {
-    const data = await api('GET', '/storage');
-    state.storage = data;
-    document.getElementById('storageText').textContent = `${data.used_formatted} / ${data.total_formatted}`;
-    document.getElementById('storageBar').style.width = Math.min(data.percent_used, 100) + '%';
-  } catch (e) {
-    document.getElementById('storageText').textContent = '—';
-  }
+    const data = await fetchApi('GET', '/storage');
+    document.getElementById('storageLabel').textContent = `${data.used_formatted} / ${data.total_formatted}`;
+    document.getElementById('storageMeter').style.width = Math.min(data.percent_used, 100) + '%';
+  } catch (e) {}
 }
 
-// ============================================================================
-// KEYBOARD
-// ============================================================================
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    closeModal();
-    document.getElementById('contextMenu').classList.remove('show');
-  }
-  if (e.ctrlKey && e.key === 'v' && state.clipboard) {
-    pasteClipboard();
-  }
-});
-
-async function pasteClipboard() {
-  if (!state.clipboard) return;
-  const { action } = state.clipboard;
-  const paths = state.clipboard.paths;
-  
-  const endpoint = action === 'copy' ? 'copy' : 'move';
-  try {
-    for (const p of paths) {
-      await api('POST', `/files/${endpoint}`, { path: p, destination: state.currentPath });
-    }
-    toast(`✅ ${paths.length} item(ns) ${action === 'copy' ? 'copiado(s)' : 'movido(s)'} para cá`, 'success');
-    state.clipboard = null;
-    loadFiles(state.currentPath);
-  } catch (e) {
-    toast(`❌ ${e.message}`, 'error');
-  }
-}
-
-// ============================================================================
-// MODAL
-// ============================================================================
 function showModal(html) {
-  document.getElementById('modalContent').innerHTML = html;
-  document.getElementById('modalOverlay').classList.add('show');
+  document.getElementById('modalWindow').innerHTML = html;
+  document.getElementById('modalBackdrop').classList.add('show');
 }
-
 function closeModal() {
-  document.getElementById('modalOverlay').classList.remove('show');
+  document.getElementById('modalBackdrop').classList.remove('show');
 }
 
-// ============================================================================
-// TOAST
-// ============================================================================
-function toast(message, type = 'info') {
-  const container = document.getElementById('toastContainer');
-  const el = document.createElement('div');
-  el.className = `toast ${type}`;
-  el.textContent = message;
-  container.appendChild(el);
-  setTimeout(() => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateX(20px)';
-    setTimeout(() => el.remove(), 300);
-  }, 3000);
+function toast(msg, type = 'info') {
+  const rack = document.getElementById('toastRack');
+  const t = document.createElement('div');
+  t.className = 'apple-toast';
+  t.textContent = msg;
+  rack.appendChild(t);
+  setTimeout(() => t.remove(), 2800);
 }
 
-// ============================================================================
-// HELPERS
-// ============================================================================
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-// ============================================================================
-// INIT - check if already logged in
-// ============================================================================
-// Check hash for token
-if (window.location.hash) {
-  try {
-    const params = new URLSearchParams(window.location.hash.slice(1));
-    const t = params.get('token');
-    if (t) {
-      state.token = t;
-      state.user = { username: 'auto', role: 'user' };
-      document.getElementById('loginContainer').classList.add('hidden');
-      document.getElementById('appLayout').classList.add('show');
-      loadFiles('/');
-      loadStorage();
-    }
-  } catch(e) {}
+function escapeHtml(str) {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 </script>
 </body>
