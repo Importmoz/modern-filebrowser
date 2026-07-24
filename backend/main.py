@@ -53,19 +53,25 @@ app.add_middleware(
 # =============================================================================
 
 
+
+SECURE_CODE = os.environ.get("SECURE_CODE", "123456")
+
 def is_system_path(path_str: str) -> bool:
     try:
-        full = str(get_full_path(path_str))
+        # Avoid get_full_path circular issue by resolving simply here
+        safe = sanitize_path(path_str)
+        full = str((Path(ROOT_PATH) / safe).resolve())
         protected = ('/etc', '/var', '/usr', '/bin', '/sbin', '/lib', '/boot', '/sys', '/proc', '/dev')
-        return full.startswith(protected) or full == '/'
+        return full.startswith(protected) or full == '/' or full == '/root'
     except:
         return False
 
 def check_security(path_str: str, code: str):
     if is_system_path(path_str) and code != SECURE_CODE:
         raise HTTPException(403, "Código de segurança inválido ou ausente para área de sistema")
-        
+
 def load_users():
+
     """Carrega usuários do arquivo JSON."""
     default_users = {
         "admin": {
