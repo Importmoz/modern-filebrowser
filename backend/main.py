@@ -5,7 +5,7 @@
 #   pip install fastapi uvicorn python-multipart pyjwt aiofiles
 #
 # Para rodar:
-#   uvicorn main:app --host 0.0.0.0 --port 8000
+#   uvicorn main:app --host 0.0.0.0 --port 8090
 
 import os
 import json
@@ -34,7 +34,7 @@ JWT_SECRET = os.environ.get("JWT_SECRET", "change-me-to-a-secure-random-string")
 JWT_ALGO = "HS256"
 JWT_EXPIRATION_HOURS = 24
 USERS_FILE = os.environ.get("USERS_FILE", "/app/data/users.json")
-PORT = int(os.environ.get("PORT", 8000))
+PORT = int(os.environ.get("PORT", 8090))
 MAX_FILE_SIZE = int(os.environ.get("MAX_FILE_SIZE", 500 * 1024 * 1024))  # 500MB
 
 app = FastAPI(title="NovaDrive", docs_url=None, redoc_url=None)

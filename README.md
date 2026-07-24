@@ -38,7 +38,7 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-Acesse: **http://SEU_IP:8000**
+Acesse: **http://SEU_IP:8090**
 
 **Login padrão:** `admin` / `admin`
 
@@ -48,7 +48,7 @@ Acesse: **http://SEU_IP:8000**
 2. Cole o conteúdo do `docker-compose.yml`
 3. Configure:
    - `ROOT_PATH`: diretório a gerenciar
-   - `PORT`: 8000
+   - `PORT`: 8090
 4. Aponte um domínio (Coolify faz SSL automaticamente)
 5. **Force rebuild** na primeira vez
 
@@ -58,10 +58,10 @@ Acesse: **http://SEU_IP:8000**
 # Backend
 cd backend
 pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
+uvicorn main:app --reload --port 8090
 
 # Frontend (só abrir o HTML)
-# O FastAPI serve o frontend em http://localhost:8000
+# O FastAPI serve o frontend em http://localhost:8090
 ```
 
 ## 📁 Estrutura

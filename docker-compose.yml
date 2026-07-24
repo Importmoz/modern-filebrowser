@@ -8,18 +8,18 @@ services:
     container_name: novadrive
     restart: unless-stopped
     ports:
-      - "${PORT:-8000}:8000"
+      - "${PORT:-8090}:8090"
     volumes:
       - "${ROOT_PATH:-/mnt/storage}:/data:rw"
       - ./data:/app/data
     environment:
       - ROOT_PATH=/data
       - USERS_FILE=/app/data/users.json
-      - PORT=8000
+      - PORT=8090
       - MAX_FILE_SIZE=${MAX_FILE_SIZE:-524288000}
       - TZ=${TZ:-America/Sao_Paulo}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/auth/me"]
+      test: ["CMD", "curl", "-f", "http://localhost:8090/api/auth/me"]
       interval: 30s
       timeout: 10s
       retries: 3
