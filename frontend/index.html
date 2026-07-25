@@ -385,7 +385,7 @@ body {
   border-bottom: 1px solid var(--border);
   background: rgba(10, 11, 15, 0.4);
   backdrop-filter: var(--blur);
-  gap: 20px;
+  gap: 14px;
 }
 
 .toolbar-left {
@@ -524,15 +524,15 @@ body {
 /* Grid View */
 .file-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 14px;
 }
 
 .grid-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 24px 12px 16px;
+  padding: 14px 10px 8px;
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
@@ -561,11 +561,11 @@ body {
 }
 
 .grid-card .icon-wrapper {
-  width: 64px; height: 64px;
+  width: 48px; height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
   border-radius: var(--radius-sm);
   transition: var(--bounce);
 }
@@ -583,7 +583,7 @@ body {
 .grid-card .icon-wrapper.file { color: var(--text-secondary); }
 
 .grid-card .title {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-primary);
   width: 100%;
@@ -593,7 +593,7 @@ body {
   padding: 0 8px;
 }
 .grid-card .meta {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-tertiary);
   margin-top: 4px;
 }
@@ -1481,7 +1481,7 @@ function renderViewport(data) {
           ${getIconSvg(item)}
         </div>
         <div class="title" title="${item.name}">${item.name}</div>
-        <div class="meta">${item.is_dir ? 'Pasta' : item.size_formatted}</div>
+        <div class="meta">${item.is_dir ? '' : item.size_formatted}</div>
       </div>
     `).join('')}</div>`;
   } else {
@@ -1503,7 +1503,7 @@ function renderViewport(data) {
               <span class="icon-wrapper ${item.icon}">${getIconSvg(item)}</span>
               <span class="name-text">${item.name}</span>
             </div>
-            <div class="size-col">${item.is_dir ? '—' : item.size_formatted}</div>
+            <div class="size-col">${item.is_dir ? '' : item.size_formatted}</div>
             <div class="date-col">${formatDate(item.modified)}</div>
             <div></div>
           </div>
