@@ -1423,23 +1423,73 @@ function handleSearch(val) {
   }, 300);
 }
 
+
 function openContextMenu(e, path) {
   e.preventDefault();
+  e.stopPropagation(); // Stop global contextmenu listener from firing
+  
   state.activeItem = path;
   if (!state.selected.has(path)) {
     state.selected.clear();
     state.selected.add(path);
     renderViewport({ items: state.items });
   }
+  
   const menu = document.getElementById('novaMenu');
-  menu.style.left = e.clientX + 'px';
-  menu.style.top = e.clientY + 'px';
-  menu.classList.add('show');
+  
+  // Calculate position to prevent menu going off-screen
+  let x = e.clientX;
+  let y = e.clientY;
+  
+  // Add a slight delay to get accurate dimensions if it's the first time
+  menu.style.display = 'block';
+  menu.style.opacity = '0';
+  
+  requestAnimationFrame(() => {
+    const rect = menu.getBoundingClientRect();
+    const winWidth = window.innerWidth;
+    const winHeight = window.innerHeight;
+    
+    if (x + rect.width > winWidth) x = winWidth - rect.width - 10;
+    if (y + rect.height > winHeight) y = winHeight - rect.height - 10;
+    
+    menu.style.left = x + 'px';
+    menu.style.top = y + 'px';
+    
+    menu.style.display = '';
+    menu.style.opacity = '';
+    menu.classList.add('show');
+  });
 }
+
+
+
+// ============================================================================
+// GLOBAL CONTEXT MENU & CLICK HANDLING
+// ============================================================================
+document.addEventListener('contextmenu', (e) => {
+  // Allow normal right click on inputs and textareas (for copy/paste)
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+    return;
+  }
+  
+  // Disable the default browser context menu everywhere else
+  e.preventDefault();
+  
+  // If clicked on an empty area, just close our custom menu and clear selection
+  if (!e.target.closest('.grid-card') && !e.target.closest('.list-row')) {
+    document.getElementById('novaMenu').classList.remove('show');
+    if (state.selected.size > 0) {
+      state.selected.clear();
+      renderViewport({ items: state.items });
+    }
+  }
+});
 
 document.addEventListener('click', () => {
   document.getElementById('novaMenu').classList.remove('show');
 });
+
 
 function triggerAction(action) {
   const path = state.activeItem;
