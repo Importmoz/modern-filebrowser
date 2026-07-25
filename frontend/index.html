@@ -285,8 +285,15 @@ body {
 .sidebar.collapsed {
   width: 80px;
   min-width: 80px;
-  padding: 24px 10px;
+  padding: 24px 0;
   align-items: center;
+}
+
+.sidebar.collapsed .brand-title {
+  justify-content: center !important;
+  width: auto !important;
+  padding: 0 !important;
+  margin-bottom: 12px;
 }
 
 .sidebar.collapsed .brand-title span,
@@ -294,23 +301,26 @@ body {
 .sidebar.collapsed .nav-btn span,
 .sidebar.collapsed .nav-btn .lock-icon,
 .sidebar.collapsed .storage-info,
-.sidebar.collapsed .storage-track {
-  display: none;
+.sidebar.collapsed .storage-track,
+.sidebar.collapsed .storage-widget {
+  display: none !important;
+}
+
+.sidebar.collapsed .nav-group {
+  align-items: center;
+  width: 100%;
 }
 
 .sidebar.collapsed .nav-btn {
   justify-content: center;
-  padding: 12px;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border-radius: var(--radius-full);
 }
 
 .sidebar.collapsed .nav-btn .svg-icon {
   margin: 0;
-}
-
-.sidebar.collapsed .storage-widget {
-  padding: 12px;
-  background: transparent;
-  border: none;
 }
 
 .brand-title {
@@ -2253,8 +2263,23 @@ function toggleSidebar() {
   setTimeout(() => {
     sidebar.classList.remove('open');
     overlay.classList.remove('active');
-  }, 800);
+  }, 300); // Reduzido para 300ms para fechar mais rápido ao clicar
 }
+
+// Fechar sidebar ao clicar fora (Mobile/Tablet drawer)
+document.addEventListener('click', function(e) {
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  const toggleBtn = document.querySelector('.menu-toggle-btn');
+  
+  if (sidebar && sidebar.classList.contains('open')) {
+    // Se o clique foi fora da sidebar E fora do botão de abrir o menu (hamburger)
+    if (!sidebar.contains(e.target) && (!toggleBtn || !toggleBtn.contains(e.target))) {
+      sidebar.classList.remove('open');
+      if (overlay) overlay.classList.remove('active');
+    }
+  }
+});
 
 // Auto-show menu toggle button on tablet/mobile via CSS
 // The button is hidden by default and shown via media queries
