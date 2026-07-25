@@ -34,6 +34,7 @@ JWT_SECRET = os.environ.get("JWT_SECRET", "change-me-to-a-secure-random-string")
 JWT_ALGO = "HS256"
 JWT_EXPIRATION_HOURS = 24
 USERS_FILE = os.environ.get("USERS_FILE", "/app/data/users.json")
+SHARES_FILE = os.environ.get("SHARES_FILE", "/app/data/shares.json")
 PORT = int(os.environ.get("PORT", 8090))
 MAX_FILE_SIZE = int(os.environ.get("MAX_FILE_SIZE", 500 * 1024 * 1024))  # 500MB
 SECURE_CODE = os.environ.get("SECURE_CODE", "123456")
@@ -69,6 +70,30 @@ def is_system_path(path_str: str) -> bool:
 def check_security(path_str: str, code: str):
     if is_system_path(path_str) and code != SECURE_CODE:
         raise HTTPException(403, "Código de segurança inválido ou ausente para área de sistema")
+
+
+def load_shares():
+    if not os.path.exists(SHARES_FILE):
+        return {}
+    try:
+        with open(SHARES_FILE, "r") as f:
+            return json.load(f)
+    except:
+        return {}
+
+def save_shares(shares):
+    os.makedirs(os.path.dirname(SHARES_FILE), exist_ok=True)
+    with open(SHARES_FILE, "w") as f:
+        json.dump(shares, f, indent=2)
+
+def clean_expired_shares():
+    shares = load_shares()
+    now = datetime.datetime.now().timestamp()
+    to_delete = [k for k, v in shares.items() if v.get('expires_at') and v['expires_at'] < now]
+    if to_delete:
+        for k in to_delete:
+            del shares[k]
+        save_shares(shares)
 
 def load_users():
 
@@ -637,6 +662,118 @@ async def move_file(
         "source": path,
         "destination": str(dst.relative_to(ROOT_PATH))
     }
+
+
+@app.post("/api/files/share")
+async def create_share(
+    path: str = Form(...),
+    expires_in_hours: int = Form(168), # Padrão: 7 dias
+    current_user: dict = Depends(get_current_user),
+    x_secure_code: Optional[str] = Header(None)
+):
+    """Gera um link público para baixar o arquivo/pasta."""
+    check_security(path, x_secure_code)
+    full_path = get_full_path(path)
+    
+    if not full_path.exists():
+        raise HTTPException(404, "Arquivo não encontrado")
+        
+    shares = load_shares()
+    
+    # Verifica se já existe um share ativo para este path
+    for share_id, data in shares.items():
+        if data['path'] == path and (not data.get('expires_at') or data['expires_at'] > datetime.datetime.now().timestamp()):
+            return {"share_id": share_id, "url": f"/api/public/share/{share_id}"}
+            
+    share_id = str(uuid.uuid4().hex)
+    shares[share_id] = {
+        "path": path,
+        "is_dir": full_path.is_dir(),
+        "created_by": current_user["username"],
+        "created_at": datetime.datetime.now().timestamp(),
+        "expires_at": (datetime.datetime.now() + datetime.timedelta(hours=expires_in_hours)).timestamp() if expires_in_hours > 0 else None
+    }
+    
+    save_shares(shares)
+    return {"share_id": share_id, "url": f"/api/public/share/{share_id}"}
+
+@app.get("/api/public/share/{share_id}")
+async def download_shared_file(share_id: str):
+    """Download público sem autenticação."""
+    clean_expired_shares()
+    shares = load_shares()
+    
+    if share_id not in shares:
+        raise HTTPException(404, "Link inválido ou expirado")
+        
+    share_data = shares[share_id]
+    
+    # Segurança para downloads públicos: resolve baseado no ROOT_PATH mas s/ check de sistema p/ leitura
+    safe = sanitize_path(share_data["path"])
+    full_path = Path(ROOT_PATH) / safe
+    full_path = full_path.resolve()
+    
+    if not str(full_path).startswith(str(Path(ROOT_PATH).resolve())) or not full_path.exists():
+        raise HTTPException(404, "Arquivo indisponível")
+        
+    if full_path.is_file():
+        mime_type, _ = mimetypes.guess_type(str(full_path))
+        return FileResponse(
+            path=str(full_path),
+            filename=full_path.name,
+            media_type=mime_type or "application/octet-stream"
+        )
+    else:
+        # É uma pasta zipada na mosca
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+            for root, dirs, files in os.walk(full_path):
+                for file in files:
+                    file_path = Path(root) / file
+                    arcname = str(file_path.relative_to(full_path.parent))
+                    zf.write(file_path, arcname)
+        
+        zip_buffer.seek(0)
+        return StreamingResponse(
+            zip_buffer,
+            media_type="application/zip",
+            headers={
+                "Content-Disposition": f'attachment; filename="{full_path.name}.zip"'
+            }
+        )
+
+@app.post("/api/files/extract")
+async def extract_zip(
+    path: str = Form(...),
+    current_user: dict = Depends(get_current_user),
+    x_secure_code: Optional[str] = Header(None)
+):
+    """Extrai arquivo ZIP no mesmo diretório."""
+    check_security(path, x_secure_code)
+    full_path = get_full_path(path)
+    
+    if not full_path.exists() or not full_path.is_file():
+        raise HTTPException(404, "Arquivo não encontrado")
+        
+    if full_path.suffix.lower() != '.zip':
+        raise HTTPException(400, "Apenas arquivos .zip são suportados no momento")
+        
+    extract_dir = full_path.parent / full_path.stem
+    
+    # Se pasta com mesmo nome já existe, anexa timestamp
+    if extract_dir.exists():
+        extract_dir = full_path.parent / f"{full_path.stem}_{int(datetime.datetime.now().timestamp())}"
+        
+    extract_dir.mkdir(parents=True, exist_ok=True)
+    
+    try:
+        with zipfile.ZipFile(full_path, 'r') as zf:
+            zf.extractall(extract_dir)
+        return {"extracted": True, "destination": str(extract_dir.relative_to(ROOT_PATH))}
+    except zipfile.BadZipFile:
+        raise HTTPException(400, "Arquivo ZIP corrompido")
+    except Exception as e:
+        raise HTTPException(500, f"Erro na extração: {str(e)}")
 
 @app.get("/api/files/preview")
 async def preview_file(

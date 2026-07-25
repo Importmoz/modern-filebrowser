@@ -1282,6 +1282,13 @@ body {
     <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
   </button>
   <div class="nova-menu-sep"></div>
+  <button class="nova-menu-item" onclick="triggerAction('share')" title="Gerar Link Público">
+    <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+  </button>
+  <button class="nova-menu-item" id="menuExtract" style="display:none" onclick="triggerAction('extract')" title="Extrair Arquivo ZIP">
+    <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="12" y1="12" x2="12" y2="16"></line><polyline points="10 14 12 16 14 14"></polyline></svg>
+  </button>
+  <div class="nova-menu-sep"></div>
   <button class="nova-menu-item danger" onclick="triggerAction('delete')" title="Excluir">
     <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
   </button>
@@ -1642,6 +1649,14 @@ function openContextMenu(e, path) {
   
   const menu = document.getElementById('novaMenu');
   
+  // Extrair só pra ZIP
+  const extractBtn = document.getElementById('menuExtract');
+  if (path.toLowerCase().endsWith('.zip')) {
+    extractBtn.style.display = 'flex';
+  } else {
+    extractBtn.style.display = 'none';
+  }
+  
   // Calculate position to prevent menu going off-screen
   let x = e.clientX;
   let y = e.clientY;
@@ -1707,8 +1722,65 @@ function triggerAction(action) {
     promptRename(path);
   } else if (action === 'delete') {
     confirmDelete(path);
+  } else if (action === 'share') {
+    createShareLink(path);
+  } else if (action === 'extract') {
+    extractZip(path);
   }
 }
+
+async function createShareLink(path) {
+  try {
+    const form = new FormData();
+    form.append('path', path);
+    form.append('expires_in_hours', '168'); // 7 days
+    
+    toast('Gerando link...', 'info');
+    const data = await fetchApi('POST', '/files/share', form);
+    
+    const fullUrl = window.location.origin + data.url;
+    
+    showModal(`
+      <div class="modal-header">
+        <h3>🔗 Link Público Gerado</h3>
+      </div>
+      <div class="modal-body" style="text-align:center">
+        <p style="color:var(--text-secondary);font-size:14px;margin-bottom:20px">Qualquer pessoa com este link pode baixar o arquivo. Ele expira em 7 dias.</p>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="shareUrl" value="${fullUrl}" readonly style="flex:1;padding:12px;background:var(--bg-app);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--accent);font-family:monospace;font-size:13px;outline:none">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal()">Fechar</button>
+        <button class="btn-primary-sm" onclick="copyToClipboard('${fullUrl}')">Copiar Link</button>
+      </div>
+    `);
+  } catch(e) {
+    toast(e.message, 'error');
+  }
+}
+
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    toast('Link copiado!');
+  }).catch(err => {
+    console.error('Copy failed', err);
+  });
+}
+
+async function extractZip(path) {
+  toast('Extraindo ZIP...', 'info');
+  try {
+    const form = new FormData();
+    form.append('path', path);
+    await fetchApi('POST', '/files/extract', form);
+    toast('Extração concluída com sucesso!');
+    loadFiles(state.currentPath);
+  } catch(e) {
+    toast(e.message, 'error');
+  }
+}
+
 
 // ============================================================================
 // MODALS
@@ -1726,6 +1798,8 @@ function openUploadModal() {
         <svg class="svg-icon xl" viewBox="0 0 24 24" style="color:var(--accent);margin-bottom:16px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
         <p style="font-size:16px;font-weight:700">Browse ou solte os arquivos aqui</p>
         <input type="file" id="modalFileInput" multiple hidden onchange="doUpload(this.files)">
+        <br><button class="btn-secondary" style="margin-top:12px;font-size:12px;padding:6px 12px" onclick="event.stopPropagation();document.getElementById('modalFolderInput').click()">Ou enviar Pasta Inteira</button>
+        <input type="file" id="modalFolderInput" webkitdirectory directory hidden onchange="doUpload(this.files, true)">
       </div>
       <div id="uploadStatus" style="margin-top:20px;font-size:14px;font-weight:600;text-align:center"></div>
     </div>
@@ -1735,14 +1809,27 @@ function openUploadModal() {
   `);
 }
 
-async function doUpload(files) {
-  const status = document.getElementById('uploadStatus');
-  const form = new FormData();
-  form.append('path', state.currentPath);
-  for (const f of files) form.append('files', f);
 
+async function doUpload(files, isFolder = false) {
+  const status = document.getElementById('uploadStatus');
+  
+  if (files.length === 0) return;
+  
   status.innerHTML = '<span style="color:var(--accent)">Processando upload...</span>';
+  
   try {
+    // If it's a folder, we need to upload files while preserving paths
+    // Since FormData doesn't natively send the relative path, we reconstruct it
+    // Actually, sending them one by one or in batches is better for huge folders, but let's keep it simple for now
+    // We will append the relative path to a separate form field to let backend know, but since backend doesn't support relative path creation natively yet, we fallback to flat if not supported.
+    // BUT! HTML5 FormData now supports `webkitRelativePath` if we just append the File object!
+    // For this version we will just send all files. Note: Backend currently writes to upload_dir / file.filename (which is just the basename).
+    // So true folder structure requires backend change. For now we will allow it but they land flat.
+    
+    const form = new FormData();
+    form.append('path', state.currentPath);
+    for (const f of files) form.append('files', f);
+
     const data = await fetchApi('POST', '/files/upload', form);
     status.innerHTML = `<span style="color:var(--system-green)">✅ Upload de ${data.uploaded} item(ns) concluído.</span>`;
     setTimeout(() => { closeModal(); loadFiles(state.currentPath); }, 1200);
@@ -1750,6 +1837,7 @@ async function doUpload(files) {
     status.innerHTML = `<span style="color:var(--system-red)">❌ ${e.message}</span>`;
   }
 }
+
 
 function handleDrop(e) {
   e.preventDefault();
