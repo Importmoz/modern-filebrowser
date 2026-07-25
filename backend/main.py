@@ -135,17 +135,25 @@ def decode_token(token):
     except jwt.InvalidTokenError:
         raise HTTPException(401, "Token inválido")
 
+
 def get_current_user(request: Request):
     """Obtém usuário atual do token."""
     auth = request.headers.get("Authorization", "")
-    if not auth.startswith("Bearer "):
+    token = None
+    if auth.startswith("Bearer "):
+        token = auth[7:]
+    elif request.query_params.get("token"):
+        token = request.query_params.get("token")
+        
+    if not token:
         raise HTTPException(401, "Não autenticado")
-    token = auth[7:]
+        
     username = decode_token(token)
     users = load_users()
     if username not in users:
         raise HTTPException(401, "Usuário não encontrado")
     return {**users[username], "username": username}
+
 
 def sanitize_path(path: str) -> str:
     """Normaliza e valida o caminho."""
