@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NovaDrive</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.3/p5.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -1123,10 +1124,7 @@ body {
 </head>
 <body>
 
-<div class="bg-glow">
-  <div class="bg-glow-1"></div>
-  <div class="bg-glow-2"></div>
-</div>
+<div id="p5-canvas-container" style="position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.45;mix-blend-mode:screen"></div>
 
 <!-- LOGIN -->
 <div class="login-wrapper" id="loginScreen">
@@ -2208,6 +2206,120 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 });
+
+
+// ============================================================================
+// P5.JS FLOW FIELD BACKGROUND WITH MOUSE FOLLOW
+// ============================================================================
+const FLOW_CONFIG = {
+  particleCount: window.innerWidth < 768 ? 200 : 500, // Menos partículas no mobile
+  noiseScale: 0.003,
+  speed: 1.8,
+  trailFade: 12,
+  strokeW: 1.5,
+  hueBase: 250, // Azul/Roxo (Combina com o NovaDrive)
+  hueRange: 60,
+};
+
+let particles = [];
+let targetMouseX = -1000;
+let targetMouseY = -1000;
+
+document.addEventListener('mousemove', (e) => {
+  targetMouseX = e.clientX;
+  targetMouseY = e.clientY;
+});
+
+function setup() {
+  let canvas = createCanvas(windowWidth, windowHeight);
+  canvas.parent('p5-canvas-container');
+  colorMode(HSB, 360, 100, 100, 100);
+  
+  for (let i = 0; i < FLOW_CONFIG.particleCount; i++) {
+    particles.push(new Particle());
+  }
+  background(230, 20, 5); // Fundo muito escuro
+}
+
+class Particle {
+  constructor() {
+    this.reset();
+    this.vx = 0;
+    this.vy = 0;
+  }
+  reset() {
+    this.x = random(width);
+    this.y = random(height);
+    this.hueOffset = random(360);
+    this.speedMul = random(0.5, 1.5);
+  }
+  update() {
+    // Ruído Perlin (Flow Field)
+    const angle = noise(this.x * FLOW_CONFIG.noiseScale, this.y * FLOW_CONFIG.noiseScale, frameCount * 0.0005) * TWO_PI * 4;
+    this.vx += cos(angle) * 0.06;
+    this.vy += sin(angle) * 0.06;
+    
+    // Efeito magnético do Mouse (Suave)
+    if (targetMouseX !== -1000 && targetMouseY !== -1000) {
+      let dx = targetMouseX - this.x;
+      let dy = targetMouseY - this.y;
+      let distSq = dx*dx + dy*dy;
+      if (distSq < 60000) { // Raio de influência ~240px
+        let force = 200 / (sqrt(distSq) + 50);
+        this.vx += dx * force * 0.0005;
+        this.vy += dy * force * 0.0005;
+      }
+    }
+
+    // Limite de velocidade
+    const mag = sqrt(this.vx * this.vx + this.vy * this.vy);
+    if (mag > FLOW_CONFIG.speed * this.speedMul) {
+      this.vx = (this.vx / mag) * FLOW_CONFIG.speed * this.speedMul;
+      this.vy = (this.vy / mag) * FLOW_CONFIG.speed * this.speedMul;
+    }
+    
+    this.x += this.vx;
+    this.y += this.vy;
+
+    // Reposiciona se sair da tela
+    if (this.x < -10 || this.x > width + 10 || this.y < -10 || this.y > height + 10) {
+      this.reset();
+      // Reposiciona inteligentemente na borda ou aleatório
+      if (random(1) < 0.5) {
+        this.x = random(width);
+        this.y = random(height);
+      }
+    }
+  }
+  display() {
+    const noiseVal = noise(this.x * 0.002, this.y * 0.002, frameCount * 0.0003);
+    const hue = (FLOW_CONFIG.hueBase + noiseVal * FLOW_CONFIG.hueRange + this.hueOffset * 0.1) % 360;
+    const sat = 70 + noiseVal * 30;
+    const bri = 80 + noiseVal * 20;
+    const alpha = 40;
+    
+    stroke(hue, sat, bri, alpha);
+    strokeWeight(FLOW_CONFIG.strokeW);
+    point(this.x, this.y);
+  }
+}
+
+function draw() {
+  noStroke();
+  // Fading para criar o rastro (Cores da paleta NovaDrive)
+  fill(230, 20, 5, FLOW_CONFIG.trailFade);
+  rect(0, 0, width, height);
+
+  for (let p of particles) {
+    p.update();
+    p.display();
+  }
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  background(230, 20, 5);
+}
 
 </script>
 </body>
