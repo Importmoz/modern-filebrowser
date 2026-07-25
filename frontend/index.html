@@ -278,6 +278,38 @@ body {
   flex-direction: column;
   padding: 24px 16px;
   gap: 24px;
+  transition: width 0.3s cubic-bezier(0.25, 1, 0.5, 1), min-width 0.3s cubic-bezier(0.25, 1, 0.5, 1), padding 0.3s;
+  overflow: hidden;
+}
+
+.sidebar.collapsed {
+  width: 80px;
+  min-width: 80px;
+  padding: 24px 10px;
+  align-items: center;
+}
+
+.sidebar.collapsed .brand-title span,
+.sidebar.collapsed .nav-section-title,
+.sidebar.collapsed .nav-btn span,
+.sidebar.collapsed .storage-info,
+.sidebar.collapsed .storage-track {
+  display: none;
+}
+
+.sidebar.collapsed .nav-btn {
+  justify-content: center;
+  padding: 12px;
+}
+
+.sidebar.collapsed .nav-btn .svg-icon {
+  margin: 0;
+}
+
+.sidebar.collapsed .storage-widget {
+  padding: 12px;
+  background: transparent;
+  border: none;
 }
 
 .brand-title {
@@ -1155,9 +1187,14 @@ body {
 
   <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="brand-title">
-      <svg class="svg-icon lg" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-      NovaDrive
+    <div class="brand-title" style="justify-content: space-between; width: 100%;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <svg class="svg-icon lg" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+        <span>NovaDrive</span>
+      </div>
+      <button onclick="toggleDesktopSidebar()" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; display:flex; padding:4px;" title="Colapsar Menu" class="collapse-btn">
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 12H5"></path><polyline points="12 19 5 12 12 5"></polyline></svg>
+      </button>
     </div>
 
     
@@ -1316,6 +1353,20 @@ body {
 <div class="toast-rack" id="toastRack"></div>
 
 <script>
+
+
+function toggleDesktopSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  sidebar.classList.toggle('collapsed');
+  
+  // Update icon direction
+  const icon = sidebar.querySelector('.collapse-btn svg');
+  if (sidebar.classList.contains('collapsed')) {
+    icon.innerHTML = '<path d="M5 12h14"></path><polyline points="12 5 19 12 12 19"></polyline>';
+  } else {
+    icon.innerHTML = '<path d="M19 12H5"></path><polyline points="12 19 5 12 12 5"></polyline>';
+  }
+}
 
 // ============================================================================
 // KEYBOARD SHORTCUTS
