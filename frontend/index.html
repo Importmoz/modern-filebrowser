@@ -1292,6 +1292,21 @@ body {
   </button>
 </div>
 
+
+<!-- CONTEXT MENU EMPTY SPACE -->
+<div class="nova-menu" id="novaMenuEmpty">
+  <button class="nova-menu-item" onclick="promptFolder()" title="Nova Pasta">
+    <svg class="svg-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+  </button>
+  <button class="nova-menu-item" onclick="openUploadModal()" title="Fazer Upload">
+    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+  </button>
+  <div class="nova-menu-sep"></div>
+  <button class="nova-menu-item" onclick="loadFiles(state.currentPath)" title="Atualizar">
+    <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+  </button>
+</div>
+
 <!-- MODAL -->
 <div class="modal-backdrop" id="modalBackdrop">
   <div class="nova-modal" id="modalWindow"></div>
@@ -1722,26 +1737,53 @@ function openContextMenu(e, path) {
 // GLOBAL CONTEXT MENU & CLICK HANDLING
 // ============================================================================
 document.addEventListener('contextmenu', (e) => {
-  // Allow normal right click on inputs and textareas (for copy/paste)
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
     return;
   }
   
-  // Disable the default browser context menu everywhere else
   e.preventDefault();
   
-  // If clicked on an empty area, just close our custom menu and clear selection
   if (!e.target.closest('.grid-card') && !e.target.closest('.list-row')) {
-    document.getElementById('novaMenu').classList.remove('show');
+    // Click no espaço vazio: esconde o menu de arquivo
+    const menu = document.getElementById('novaMenu');
+    if(menu) menu.classList.remove('show');
+    
     if (state.selected.size > 0) {
       state.selected.clear();
       renderViewport({ items: state.items });
     }
+    
+    // Abre o menu do fundo vazio
+    const menuEmpty = document.getElementById('novaMenuEmpty');
+    if (menuEmpty) {
+      let x = e.clientX;
+      let y = e.clientY;
+      menuEmpty.style.display = 'flex';
+      menuEmpty.style.opacity = '0';
+      
+      requestAnimationFrame(() => {
+        const rect = menuEmpty.getBoundingClientRect();
+        if (x + rect.width > window.innerWidth) x = window.innerWidth - rect.width - 10;
+        if (y + rect.height > window.innerHeight) y = window.innerHeight - rect.height - 10;
+        menuEmpty.style.left = x + 'px';
+        menuEmpty.style.top = y + 'px';
+        menuEmpty.style.display = '';
+        menuEmpty.style.opacity = '';
+        menuEmpty.classList.add('show');
+      });
+    }
+  } else {
+    // Se clicar no arquivo, esconde o menu do fundo
+    const menuEmpty = document.getElementById('novaMenuEmpty');
+    if(menuEmpty) menuEmpty.classList.remove('show');
   }
 });
 
 document.addEventListener('click', () => {
-  document.getElementById('novaMenu').classList.remove('show');
+  const m1 = document.getElementById('novaMenu');
+  const m2 = document.getElementById('novaMenuEmpty');
+  if(m1) m1.classList.remove('show');
+  if(m2) m2.classList.remove('show');
 });
 
 
