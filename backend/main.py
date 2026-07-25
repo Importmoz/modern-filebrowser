@@ -410,53 +410,53 @@ async def file_info(
 async def upload_file(
     path: str = Form("/"),
     files: List[UploadFile] = File(...),
+    paths: Optional[List[str]] = Form(None),
     current_user: dict = Depends(get_current_user),
     x_secure_code: Optional[str] = Header(None)
 ):
-    """Upload de um ou múltiplos arquivos."""
+    """Upload de arquivos preservando a árvore de diretórios."""
     check_security(path, x_secure_code)
     upload_dir = get_full_path(path)
     
-    if not upload_dir.exists():
-        raise HTTPException(404, "Diretório não encontrado")
-    if not upload_dir.is_dir():
-        raise HTTPException(400, "Caminho não é um diretório")
+    if not upload_dir.exists() or not upload_dir.is_dir():
+        raise HTTPException(404, "Diretório inválido ou não encontrado")
     
     uploaded = []
     errors = []
     
-    for file in files:
+    # Se paths não for enviado, faz o fallback para o nome original do arquivo (flat)
+    actual_paths = paths if paths and len(paths) == len(files) else [f.filename for f in files]
+    
+    for file, rel_path in zip(files, actual_paths):
         try:
             content = await file.read()
-            
             if len(content) > MAX_FILE_SIZE:
-                errors.append({"name": file.filename, "error": "Arquivo excede o tamanho máximo"})
+                errors.append({"name": file.filename, "error": "Excede o tamanho máximo"})
                 continue
             
-            file_path = upload_dir / file.filename
+            # Sanitiza o path para evitar path traversal hack e constrói a árvore
+            safe_rel_path = sanitize_path(rel_path)
+            file_path = upload_dir / safe_rel_path
             
-            # Evita sobrescrever: adiciona (1), (2) etc.
+            # Cria a(s) subpasta(s) necessárias automaticamente
+            file_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            # Evita sobrescrever
             if file_path.exists():
                 base = file_path.stem
                 ext = file_path.suffix
                 counter = 1
                 while file_path.exists():
-                    file_path = upload_dir / f"{base} ({counter}){ext}"
+                    file_path = file_path.parent / f"{base} ({counter}){ext}"
                     counter += 1
             
             with open(file_path, "wb") as f:
                 f.write(content)
-            
-            uploaded.append(file.filename)
+            uploaded.append(safe_rel_path)
         except Exception as e:
             errors.append({"name": file.filename, "error": str(e)})
-    
-    return {
-        "uploaded": uploaded,
-        "errors": errors,
-        "total": len(uploaded),
-        "failed": len(errors)
-    }
+            
+    return {"uploaded": len(uploaded), "errors": errors}
 
 @app.post("/api/files/folder")
 async def create_folder(

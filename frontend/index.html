@@ -1303,6 +1303,40 @@ body {
 <div class="toast-rack" id="toastRack"></div>
 
 <script>
+
+// ============================================================================
+// KEYBOARD SHORTCUTS
+// ============================================================================
+document.addEventListener('keydown', (e) => {
+  const isModalOpen = document.getElementById('modalBackdrop').classList.contains('show');
+  
+  if (isModalOpen) {
+    if (state.galleryImages && state.galleryImages.length > 0) {
+      if (e.key === 'ArrowRight') nextGalleryImage();
+      if (e.key === 'ArrowLeft') prevGalleryImage();
+    }
+    if (e.key === 'Escape') closeModal();
+    return;
+  }
+  
+  // Don't intercept if typing in search or inputs
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+  if (e.key === 'Delete' && state.selected.size > 0) {
+    const paths = Array.from(state.selected);
+    confirmDelete(paths[0]); // Apaga o primeiro selecionado
+  }
+  if (e.key === 'F2' && state.selected.size === 1) {
+    promptRename(Array.from(state.selected)[0]);
+  }
+  if (e.key === 'a' && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault();
+    state.selected.clear();
+    state.items.forEach(i => state.selected.add(i.path));
+    renderViewport({ items: state.items });
+  }
+});
+
 // ============================================================================
 // STATE & API
 // ============================================================================
@@ -1315,6 +1349,8 @@ const state = {
   viewMode: 'grid',
   searchQuery: '',
   activeItem: null,
+  galleryImages: [],
+  currentGalleryIndex: 0,
 };
 
 const API = window.location.origin + '/api';
@@ -1828,7 +1864,11 @@ async function doUpload(files, isFolder = false) {
     
     const form = new FormData();
     form.append('path', state.currentPath);
-    for (const f of files) form.append('files', f);
+    for (const f of files) {
+      form.append('files', f);
+      // Send the relative path (webkitRelativePath) to recreate folders!
+      form.append('paths', f.webkitRelativePath || f.name);
+    }
 
     const data = await fetchApi('POST', '/files/upload', form);
     status.innerHTML = `<span style="color:var(--system-green)">✅ Upload de ${data.uploaded} item(ns) concluído.</span>`;
@@ -1951,17 +1991,9 @@ async function openPreview(path) {
   const url = `${API}/files/download?path=${encodeURIComponent(path)}&token=${state.token}`;
 
   if (item.icon === 'image') {
-    showModal(`
-      <div class="modal-header">
-        <h3>${item.name}</h3>
-      </div>
-      <div class="modal-body" style="text-align:center;background:var(--bg-main)">
-        <img src="${url}" style="max-width:100%;max-height:60vh;border-radius:var(--radius-sm);box-shadow:var(--shadow-float)">
-      </div>
-      <div class="modal-footer">
-        <button class="btn-secondary" onclick="closeModal()">Fechar</button>
-      </div>
-    `);
+    state.galleryImages = state.items.filter(i => i.icon === 'image');
+    state.currentGalleryIndex = state.galleryImages.findIndex(i => i.path === path);
+    renderGalleryModal();
     return;
   }
 
@@ -2072,12 +2104,60 @@ async function loadStorage() {
   } catch (e) {}
 }
 
+
+function renderGalleryModal() {
+  const item = state.galleryImages[state.currentGalleryIndex];
+  if (!item) return;
+  const url = `${API}/files/download?path=${encodeURIComponent(item.path)}&token=${state.token}`;
+  
+  const isFirst = state.currentGalleryIndex === 0;
+  const isLast = state.currentGalleryIndex === state.galleryImages.length - 1;
+
+  showModal(`
+    <div class="modal-header" style="justify-content:center;position:relative">
+      <h3 style="flex:1;text-align:center">${item.name} <span style="font-size:12px;color:var(--text-secondary);font-weight:500">(${state.currentGalleryIndex + 1}/${state.galleryImages.length})</span></h3>
+    </div>
+    <div class="modal-body" style="display:flex;align-items:center;justify-content:center;background:var(--bg-main);position:relative;padding:0;min-height:50vh">
+      
+      <button onclick="prevGalleryImage()" style="position:absolute;left:20px;z-index:10;background:rgba(0,0,0,0.5);border:none;border-radius:50%;width:44px;height:44px;color:white;cursor:pointer;display:${isFirst ? 'none' : 'flex'};align-items:center;justify-content:center;transition:transform 0.2s">
+        <svg class="svg-icon lg" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </button>
+
+      <img src="${url}" style="max-width:100%;max-height:70vh;object-fit:contain;box-shadow:var(--shadow-float)">
+      
+      <button onclick="nextGalleryImage()" style="position:absolute;right:20px;z-index:10;background:rgba(0,0,0,0.5);border:none;border-radius:50%;width:44px;height:44px;color:white;cursor:pointer;display:${isLast ? 'none' : 'flex'};align-items:center;justify-content:center;transition:transform 0.2s">
+        <svg class="svg-icon lg" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </button>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal()">Fechar</button>
+      <button class="btn-primary-sm" onclick="window.open('${url}', '_blank')">Original</button>
+    </div>
+  `);
+}
+
+function prevGalleryImage() {
+  if (state.currentGalleryIndex > 0) {
+    state.currentGalleryIndex--;
+    renderGalleryModal();
+  }
+}
+
+function nextGalleryImage() {
+  if (state.currentGalleryIndex < state.galleryImages.length - 1) {
+    state.currentGalleryIndex++;
+    renderGalleryModal();
+  }
+}
+
 function showModal(html) {
   document.getElementById('modalWindow').innerHTML = html;
   document.getElementById('modalBackdrop').classList.add('show');
 }
 function closeModal() {
   document.getElementById('modalBackdrop').classList.remove('show');
+  state.galleryImages = [];
 }
 
 function toast(msg) {
