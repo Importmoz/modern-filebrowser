@@ -326,11 +326,13 @@ async def list_files(
     rel_path = Path(sanitize_path(path))
     parts = rel_path.parts
     
+    current_build_path = ""
     for i, part in enumerate(parts):
         if part:
+            current_build_path += "/" + part
             breadcrumbs.append({
                 "name": part,
-                "path": "/" + "/".join(parts[:i+1])
+                "path": current_build_path
             })
     
     return {

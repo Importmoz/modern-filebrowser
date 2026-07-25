@@ -1015,9 +1015,9 @@ body {
           <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </button>
         <div class="breadcrumb-trail" id="breadcrumbTrail">
-          <div class="breadcrumb-item active" onclick="navigateTo('/')">
-            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-            Root
+          <div class="breadcrumb-item active" onclick="navigateTo('/workspace')">
+            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+            Workspace
           </div>
         </div>
       </div>
@@ -1218,6 +1218,11 @@ document.getElementById('loginForm').onsubmit = async (e) => {
 // ============================================================================
 
 async function loadFiles(path) {
+  // Evitar duplas barras no final ex: /workspace/
+  if (path.length > 1 && path.endsWith('/')) {
+    path = path.slice(0, -1);
+  }
+  
   state.currentPath = path;
   state.selected.clear();
   
@@ -1225,7 +1230,8 @@ async function loadFiles(path) {
   document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.classList.remove('active');
     const action = btn.getAttribute('onclick');
-    if (action && action.includes(`navigateTo('${path === '/' ? '/' : path}')`)) {
+    // Para destacar workspace só quando estiver EXATAMENTE no root do workspace
+    if (action && action.includes(`navigateTo('${path}')`)) {
       btn.classList.add('active');
     }
   });
@@ -1335,7 +1341,10 @@ function renderBreadcrumbs(crumbs) {
       // Se estamos dentro de workspace, pula o crumb "workspace"
       if (inWorkspace && c.name.toLowerCase() === 'workspace') return;
       
-      const isActive = idx === crumbs.length - 1;
+      // Verifica qual parte está ativa
+      const pathToCheck = c.path === '/' ? c.path : (c.path.endsWith('/') ? c.path.slice(0, -1) : c.path);
+      const isActive = pathToCheck === state.currentPath;
+      
       trail.innerHTML += `
         <span class="breadcrumb-sep">/</span>
         <div class="breadcrumb-item ${isActive ? 'active' : ''}" onclick="navigateTo('${c.path}')">${c.name}</div>
