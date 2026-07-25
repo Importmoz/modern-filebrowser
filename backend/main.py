@@ -861,11 +861,21 @@ if os.path.exists(FRONTEND_DIR):
 # Inicialização
 # =============================================================================
 
+
 @app.on_event("startup")
 async def startup():
     """Inicializa diretórios e arquivos necessários."""
     # Cria diretório raiz se não existir
     os.makedirs(ROOT_PATH, exist_ok=True)
+    os.makedirs(os.path.dirname(USERS_FILE), exist_ok=True)
+    
+    # Auto-cria workspace para evitar erro 404 inicial
+    workspace_dir = Path(ROOT_PATH) / "workspace"
+    try:
+        os.makedirs(str(workspace_dir), exist_ok=True)
+    except:
+        pass
+
     os.makedirs(os.path.dirname(USERS_FILE), exist_ok=True)
     
     # Cria diretório de lixeira
