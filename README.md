@@ -8,20 +8,21 @@
 
 | Funcionalidade | Descrição |
 |---|---|
-| 🎨 **Design Moderno** | Dark theme, glassmorphism, animações suaves |
-| 🔐 **Autenticação** | Login com JWT, multi-usuário com permissões |
-| 📂 **Navegação** | Breadcrumbs, navegação por pastas |
-| 📤 **Upload** | Drag & drop ou clique, múltiplos arquivos |
-| 📥 **Download** | Arquivo único ou pasta em ZIP |
-| ✏️ **Editor** | Visualize e edite arquivos de texto no navegador |
-| 🖼️ **Preview** | Imagens, vídeos, áudio, PDF |
-| 🔍 **Busca Avançada** | Busca recursiva instantânea em subpastas com filtros por tipo (pastas, imagens, documentos, código, zips) |
-| 📋 **Copiar/Mover** | Ctrl+C / Ctrl+V entre pastas |
-| 🗑️ **Lixeira** | Recupere arquivos excluídos |
-| 👥 **Multi-usuário** | Admin e usuários com escopo |
-| 📊 **Analisador de Espaço** | Diagnóstico visual completo de disco: veja exatamente qual pasta está ocupando mais espaço, ranking Top 10 e maiores arquivos |
-| 📱 **Responsivo** | Funciona em desktop e mobile |
-| 🇧🇷 **PT-BR** | Interface completa em português |
+| 🎨 **Design Moderno** | Dark theme, glassmorphism e navegação ágil otimizada para VPS |
+| ⚡ **Navegação Instantânea** | Entrada imediata em pastas sem atraso de animações |
+| 🖼️ **Miniaturas Reais** | Thumbnails gerados sob demanda em WebP com cache para imagens na grade |
+| ⚡ **Ações em Lote (Bulk)** | Barra flutuante para download ZIP em massa, mover, copiar e apagar múltiplos arquivos |
+| 🗑️ **Lixeira com Restauração** | Histórico com metadados de exclusão e restauração em 1 clique para a pasta de origem |
+| 📝 **Editor com Syntax Highlighting** | Destaque de código com Prism.js (Python, JS, HTML, CSS, Bash, JSON, SQL, Docker, YAML), indentação Tab e atalho `Ctrl+S` |
+| 🎵 **Player de Áudio Persistente** | Dock flutuante no rodapé com vinil animado para ouvir áudios enquanto navega livremente |
+| 📊 **Monitor de Recursos da VPS** | Dashboard em tempo real com telemetria de CPU, Memória RAM, Disco, Uptime e RSS do container |
+| 👥 **Gestão de Usuários (Admin)** | Painel administrativo completo para criar, editar escopos de pastas, alterar senhas e remover usuários |
+| 📤 **Upload com Progresso Real** | Barra dinâmica de progresso com porcentagem, total em MB e velocidade de transferência (MB/s) |
+| 🔍 **Busca Recursiva & Filtros** | Busca instantânea em toda a árvore de diretórios com filtros por tipo de arquivo |
+| 📊 **Analisador de Disco** | Gráficos visuais mostrando quais pastas e arquivos ocupam mais espaço no servidor |
+| 📱 **PWA (Progressive Web App)** | Instalável no smartphone ou desktop com Service Worker e ícone oficial |
+| 🔐 **Autenticação Segura** | Sessões JWT com proteção de rotas de sistema e escopo por usuário |
+| 🇧🇷 **PT-BR** | Interface completa 100% em português |
 
 ## 🚀 Deploy Rápido
 
@@ -72,7 +73,10 @@ modern-filebrowser/
 │   ├── main.py              # FastAPI completo
 │   └── requirements.txt
 ├── frontend/
-│   └── index.html           # SPA moderno dark/glass
+│   ├── index.html           # SPA moderno dark/glass
+│   ├── manifest.json        # PWA Web App Manifest
+│   ├── icon.svg             # Ícone do aplicativo
+│   └── sw.js                # Service Worker para cache e PWA
 ├── Dockerfile
 ├── docker-compose.yaml
 ├── .env.example

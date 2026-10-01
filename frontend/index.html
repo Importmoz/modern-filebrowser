@@ -3,10 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NovaDrive</title>
+<title>NovaDrive — Modern File Manager</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/svg+xml" href="/icon.svg">
+<meta name="theme-color" content="#08080b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.3/p5.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -1679,6 +1687,309 @@ body {
   background: var(--accent-soft);
   color: var(--accent-hover);
   border-color: var(--accent);
+/* Real Image Thumbnails in Grid */
+.grid-thumb-box {
+  width: 48px;
+  height: 48px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+.grid-thumb {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: transform 0.15s ease;
+}
+.grid-card:hover .grid-thumb {
+  transform: scale(1.08);
+}
+
+/* Floating Bulk Actions Bar */
+.bulk-actions-bar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(120px);
+  opacity: 0;
+  pointer-events: none;
+  background: rgba(14, 15, 22, 0.94);
+  border: 1px solid var(--accent);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7), 0 0 24px var(--accent-glow);
+  backdrop-filter: var(--blur);
+  border-radius: var(--radius-full);
+  padding: 8px 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 150;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: 90vw;
+  flex-wrap: wrap;
+}
+.bulk-actions-bar.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+.bulk-badge {
+  background: var(--accent);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.bulk-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--bounce);
+  white-space: nowrap;
+}
+.bulk-btn:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent-hover);
+  transform: translateY(-1px);
+}
+.bulk-btn.danger:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: var(--system-red);
+  color: var(--system-red);
+}
+
+/* Docked Background Music Player */
+.dock-audio-player {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: rgba(14, 15, 22, 0.95);
+  border: 1px solid var(--accent);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7), 0 0 20px var(--accent-glow);
+  backdrop-filter: var(--blur);
+  border-radius: var(--radius-full);
+  padding: 8px 16px;
+  display: none;
+  align-items: center;
+  gap: 12px;
+  z-index: 140;
+  transition: var(--bounce);
+  max-width: 380px;
+}
+.dock-audio-player.active {
+  display: flex;
+}
+.dock-vinyl {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #333 20%, #111 60%, #000 100%);
+  border: 1px solid rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: vinylSpin 3s linear infinite;
+  flex-shrink: 0;
+}
+.dock-vinyl.paused {
+  animation-play-state: paused;
+}
+.dock-vinyl::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background: var(--accent);
+  border-radius: 50%;
+}
+.dock-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 150px;
+}
+.dock-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dock-time {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}
+.dock-ctrl-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: var(--transition);
+}
+.dock-ctrl-btn:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* VPS System Monitor Cards */
+.vps-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.vps-stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+.vps-stat-card .title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.vps-stat-card .label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.vps-stat-card .val {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+.vps-meter-track {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+.vps-meter-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.6s ease;
+}
+.vps-subtext {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 6px;
+}
+
+/* User Management Table */
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.users-table th, .users-table td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.users-table th {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.badge-role {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+}
+.badge-role.admin {
+  background: rgba(139, 92, 246, 0.15);
+  color: var(--accent-hover);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+.badge-role.user {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+/* Trash Bin Modal & Rows */
+.trash-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 52vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.trash-item-row {
+  display: grid;
+  grid-template-columns: 32px 1fr 110px 140px 100px;
+  align-items: center;
+  padding: 10px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  transition: var(--bounce);
+  gap: 12px;
+}
+.trash-item-row:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border);
+}
+
+/* Upload Progress Modal */
+.upload-progress-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  text-align: center;
+}
+.upload-progress-bar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin: 14px 0 10px;
+}
+.upload-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+  border-radius: var(--radius-full);
+  width: 0%;
+  transition: width 0.15s ease;
 }
 
 /* ============================================================================
@@ -1942,7 +2253,20 @@ body {
         </button>
         <button class="nav-btn" onclick="openStorageAnalyzer()" title="Analisador de Espaço (Ver qual pasta ocupa mais espaço)">
           <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
-          <span style="flex:1">Analisador de Espaço</span>
+          <span style="flex:1">Analisador</span>
+        </button>
+        <button class="nav-btn" id="navBtnTrash" onclick="openTrashModal()" title="Lixeira (Arquivos e pastas excluídos)">
+          <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          <span style="flex:1">Lixeira</span>
+          <span id="trashBadge" style="font-size:10px;padding:2px 6px;border-radius:10px;background:rgba(239,68,68,0.2);color:var(--system-red);display:none">0</span>
+        </button>
+        <button class="nav-btn" onclick="openVpsMonitor()" title="Monitor de Hardware e Recursos da VPS">
+          <svg class="svg-icon" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+          <span style="flex:1">Monitor VPS</span>
+        </button>
+        <button class="nav-btn" id="navBtnUsers" style="display:none" onclick="openUsersManager()" title="Gerenciamento de Usuários e Permissões">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <span style="flex:1">Usuários</span>
         </button>
       </div>
     </div>
@@ -2090,6 +2414,51 @@ body {
 
 <!-- TOASTS -->
 <div class="toast-rack" id="toastRack"></div>
+
+<!-- FLOATING BULK ACTIONS BAR -->
+<div class="bulk-actions-bar" id="bulkActionsBar">
+  <div class="bulk-badge">
+    <span id="bulkCount">0</span>&nbsp;selecionado(s)
+  </div>
+  <button class="bulk-btn" onclick="bulkDownload()" title="Baixar todos selecionados em um único arquivo ZIP">
+    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+    <span>Baixar ZIP</span>
+  </button>
+  <button class="bulk-btn" onclick="bulkMovePrompt()" title="Mover selecionados para outra pasta">
+    <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    <span>Mover</span>
+  </button>
+  <button class="bulk-btn" onclick="bulkCopyPrompt()" title="Copiar selecionados para outra pasta">
+    <svg class="svg-icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+    <span>Copiar</span>
+  </button>
+  <button class="bulk-btn danger" onclick="bulkDelete()" title="Excluir todos os selecionados">
+    <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+    <span>Excluir</span>
+  </button>
+  <button class="bulk-btn" onclick="clearBulkSelection()" title="Desmarcar todos" style="padding:6px 10px">
+    ✕
+  </button>
+</div>
+
+<!-- PERSISTENT DOCKED AUDIO PLAYER -->
+<div class="dock-audio-player" id="dockAudioPlayer">
+  <div class="dock-vinyl" id="dockVinylDisc" onclick="maximizeAudioPlayer()" title="Clique para abrir reprodutor completo" style="cursor:pointer"></div>
+  <div class="dock-info" onclick="maximizeAudioPlayer()" style="cursor:pointer">
+    <div class="dock-title" id="dockTrackTitle">Reproduzindo música</div>
+    <div class="dock-time" id="dockTrackTime">00:00 / 00:00</div>
+  </div>
+  <button class="dock-ctrl-btn" onclick="dockTogglePlay()" title="Play / Pause">
+    <svg class="svg-icon" id="dockPlayIcon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+  </button>
+  <button class="dock-ctrl-btn" onclick="dockNextTrack()" title="Próxima Faixa">
+    <svg class="svg-icon" viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
+  </button>
+  <button class="dock-ctrl-btn" onclick="closeDockAudio()" title="Parar e Fechar" style="color:var(--text-tertiary)">
+    ✕
+  </button>
+</div>
+<audio id="globalBgAudio" style="display:none"></audio>
 
 <script>
 
@@ -2273,6 +2642,11 @@ document.getElementById('loginForm').onsubmit = async (e) => {
     state.user = data.user;
 
     document.getElementById('loginScreen').classList.add('hidden');
+    if (state.user && state.user.role === 'admin') {
+      const usersBtn = document.getElementById('navBtnUsers');
+      if (usersBtn) usersBtn.style.display = 'flex';
+    }
+    loadTrashCount();
     loadFiles('/workspace');
     loadStorage();
   } catch (ex) {
@@ -2425,7 +2799,10 @@ function renderViewport(data) {
            ondblclick="${item.is_dir ? `navigateTo('${escapeHtml(item.path)}')` : `openPreview('${escapeHtml(item.path)}')`}"
            oncontextmenu="openContextMenu(event, '${escapeHtml(item.path)}')">
         <div class="icon-wrapper ${item.icon}">
-          ${getIconSvg(item)}
+          ${item.icon === 'image' ? `
+            <img class="grid-thumb" loading="lazy" src="${API}/files/thumbnail?path=${encodeURIComponent(item.path)}&token=${state.token}" alt="${escapeHtml(item.name)}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+            <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center">${getIconSvg(item)}</span>
+          ` : getIconSvg(item)}
         </div>
         <div class="title" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</div>
         ${(isSearch && item.directory) ? `<div class="search-dir-badge" title="${escapeHtml(item.directory)}">📁 ${escapeHtml(item.directory)}</div>` : ''}
@@ -2566,6 +2943,172 @@ function updateSelectionUi() {
       el.classList.toggle('selected', state.selected.has(p));
     }
   });
+
+  const bar = document.getElementById('bulkActionsBar');
+  const countEl = document.getElementById('bulkCount');
+  if (bar && countEl) {
+    const count = state.selected.size;
+    countEl.textContent = count;
+    bar.classList.toggle('show', count >= 1);
+  }
+}
+
+function clearBulkSelection() {
+  state.selected.clear();
+  updateSelectionUi();
+}
+
+async function bulkDownload() {
+  const paths = Array.from(state.selected);
+  if (paths.length === 0) return;
+  toast(`Compactando ${paths.length} item(ns)...`, 'info');
+  try {
+    const res = await fetch(`${API}/files/batch/download`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${state.token}`
+      },
+      body: JSON.stringify({ paths })
+    });
+    if (!res.ok) throw new Error('Falha no download em lote');
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `novadrive_selecionados_${Date.now()}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+    toast('Download em lote concluído!', 'success');
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+async function bulkDelete() {
+  const paths = Array.from(state.selected);
+  if (paths.length === 0) return;
+  
+  showModal(`
+    <div class="modal-header">
+      <h3>🗑️ Excluir Selecionados</h3>
+    </div>
+    <div class="modal-body" style="text-align:center;padding:24px">
+      <p style="font-size:15px;margin-bottom:12px">Deseja mover <strong>${paths.length}</strong> item(ns) para a lixeira?</p>
+      <p style="font-size:12px;color:var(--text-tertiary)">Você poderá restaurá-los a qualquer momento pela Lixeira.</p>
+    </div>
+    <div class="modal-footer" style="justify-content:space-between">
+      <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn-primary-sm" style="background:var(--system-red);border-color:var(--system-red)" onclick="confirmBulkDelete()">Mover para Lixeira</button>
+    </div>
+  `);
+}
+
+async function confirmBulkDelete() {
+  const paths = Array.from(state.selected);
+  closeModal();
+  toast(`Excluindo ${paths.length} item(ns)...`, 'info');
+  try {
+    const res = await fetch(`${API}/files/batch/delete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${state.token}`
+      },
+      body: JSON.stringify({ paths, permanent: false })
+    });
+    const data = await res.json();
+    toast(`${data.deleted_count} item(ns) movidos para a lixeira`, 'success');
+    state.selected.clear();
+    loadFiles(state.currentPath);
+    loadTrashCount();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+function bulkMovePrompt() {
+  const paths = Array.from(state.selected);
+  if (paths.length === 0) return;
+  showModal(`
+    <div class="modal-header">
+      <h3>📦 Mover ${paths.length} item(ns)</h3>
+    </div>
+    <div class="modal-body" style="padding:20px">
+      <label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:8px">Caminho de Destino:</label>
+      <input type="text" id="bulkDestInput" value="${escapeHtml(state.currentPath)}" style="width:100%;padding:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);outline:none">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn-primary-sm" onclick="confirmBulkMove()">Mover Agora</button>
+    </div>
+  `);
+}
+
+async function confirmBulkMove() {
+  const paths = Array.from(state.selected);
+  const dest = document.getElementById('bulkDestInput').value.trim() || '/';
+  closeModal();
+  toast(`Movendo ${paths.length} item(ns)...`, 'info');
+  try {
+    const res = await fetch(`${API}/files/batch/move`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${state.token}`
+      },
+      body: JSON.stringify({ paths, destination: dest })
+    });
+    const data = await res.json();
+    toast(`${data.moved_count} item(ns) movidos com sucesso`, 'success');
+    state.selected.clear();
+    loadFiles(state.currentPath);
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+function bulkCopyPrompt() {
+  const paths = Array.from(state.selected);
+  if (paths.length === 0) return;
+  showModal(`
+    <div class="modal-header">
+      <h3>📋 Copiar ${paths.length} item(ns)</h3>
+    </div>
+    <div class="modal-body" style="padding:20px">
+      <label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:8px">Caminho de Destino:</label>
+      <input type="text" id="bulkCopyDestInput" value="${escapeHtml(state.currentPath)}" style="width:100%;padding:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);outline:none">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn-primary-sm" onclick="confirmBulkCopy()">Copiar Agora</button>
+    </div>
+  `);
+}
+
+async function confirmBulkCopy() {
+  const paths = Array.from(state.selected);
+  const dest = document.getElementById('bulkCopyDestInput').value.trim() || '/';
+  closeModal();
+  toast(`Copiando ${paths.length} item(ns)...`, 'info');
+  try {
+    const res = await fetch(`${API}/files/batch/copy`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${state.token}`
+      },
+      body: JSON.stringify({ paths, destination: dest })
+    });
+    const data = await res.json();
+    toast(`${data.copied_count} item(ns) copiados com sucesso`, 'success');
+    state.selected.clear();
+    loadFiles(state.currentPath);
+  } catch (err) {
+    toast(err.message, 'error');
+  }
 }
 
 function handleItemClick(path, isDir, evt) {
@@ -2922,36 +3465,96 @@ function openUploadModal() {
 }
 
 
+function formatBytes(bytes) {
+  if (bytes === 0 || !bytes) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + units[i];
+}
+
 async function doUpload(files, isFolder = false) {
   const status = document.getElementById('uploadStatus');
+  if (!files || files.length === 0) return;
   
-  if (files.length === 0) return;
-  
-  status.innerHTML = '<span style="color:var(--accent)">Processando upload...</span>';
-  
-  try {
-    // If it's a folder, we need to upload files while preserving paths
-    // Since FormData doesn't natively send the relative path, we reconstruct it
-    // Actually, sending them one by one or in batches is better for huge folders, but let's keep it simple for now
-    // We will append the relative path to a separate form field to let backend know, but since backend doesn't support relative path creation natively yet, we fallback to flat if not supported.
-    // BUT! HTML5 FormData now supports `webkitRelativePath` if we just append the File object!
-    // For this version we will just send all files. Note: Backend currently writes to upload_dir / file.filename (which is just the basename).
-    // So true folder structure requires backend change. For now we will allow it but they land flat.
-    
-    const form = new FormData();
-    form.append('path', state.currentPath);
-    for (const f of files) {
-      form.append('files', f);
-      // Send the relative path (webkitRelativePath) to recreate folders!
-      form.append('paths', f.webkitRelativePath || f.name);
-    }
+  status.innerHTML = `
+    <div class="upload-progress-box">
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700">
+        <span id="uploadStatusText">Enviando ${files.length} item(ns)...</span>
+        <span id="uploadPercentText" style="color:var(--accent)">0%</span>
+      </div>
+      <div class="upload-progress-bar">
+        <div class="upload-progress-fill" id="uploadProgressFill"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text-tertiary)">
+        <span id="uploadSizeText">0 B / ...</span>
+        <span id="uploadSpeedText">Calculando...</span>
+      </div>
+    </div>
+  `;
 
-    const data = await fetchApi('POST', '/files/upload', form);
-    status.innerHTML = `<span style="color:var(--system-green)">✅ Upload de ${data.uploaded} item(ns) concluído.</span>`;
-    setTimeout(() => { closeModal(); loadFiles(state.currentPath); }, 1200);
-  } catch (e) {
-    status.innerHTML = `<span style="color:var(--system-red)">❌ ${e.message}</span>`;
+  const form = new FormData();
+  form.append('path', state.currentPath);
+  for (const f of files) {
+    form.append('files', f);
+    form.append('paths', f.webkitRelativePath || f.name);
   }
+
+  const xhr = new XMLHttpRequest();
+  const startTime = Date.now();
+  let lastLoaded = 0;
+  let lastTime = startTime;
+
+  xhr.upload.onprogress = (e) => {
+    if (e.lengthComputable) {
+      const pct = Math.round((e.loaded / e.total) * 100);
+      const fill = document.getElementById('uploadProgressFill');
+      const pctText = document.getElementById('uploadPercentText');
+      const sizeText = document.getElementById('uploadSizeText');
+      const speedText = document.getElementById('uploadSpeedText');
+
+      if (fill) fill.style.width = pct + '%';
+      if (pctText) pctText.textContent = pct + '%';
+      if (sizeText) sizeText.textContent = `${formatBytes(e.loaded)} / ${formatBytes(e.total)}`;
+
+      const now = Date.now();
+      const timeDiff = (now - lastTime) / 1000;
+      if (timeDiff >= 0.4) {
+        const loadedDiff = e.loaded - lastLoaded;
+        const speedBps = loadedDiff / timeDiff;
+        if (speedText) speedText.textContent = `${formatBytes(speedBps)}/s`;
+        lastLoaded = e.loaded;
+        lastTime = now;
+      }
+    }
+  };
+
+  xhr.onload = () => {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const res = JSON.parse(xhr.responseText);
+        status.innerHTML = `<span style="color:var(--system-green);font-weight:700">✅ Upload de ${res.uploaded} item(ns) concluído com sucesso!</span>`;
+        setTimeout(() => { closeModal(); loadFiles(state.currentPath); }, 900);
+      } catch (err) {
+        status.innerHTML = `<span style="color:var(--system-green);font-weight:700">✅ Upload concluído!</span>`;
+        setTimeout(() => { closeModal(); loadFiles(state.currentPath); }, 900);
+      }
+    } else {
+      let errMsg = 'Erro no upload';
+      try {
+        const err = JSON.parse(xhr.responseText);
+        errMsg = err.detail || errMsg;
+      } catch (e) {}
+      status.innerHTML = `<span style="color:var(--system-red);font-weight:700">❌ ${errMsg}</span>`;
+    }
+  };
+
+  xhr.onerror = () => {
+    status.innerHTML = `<span style="color:var(--system-red);font-weight:700">❌ Falha na conexão de rede</span>`;
+  };
+
+  xhr.open('POST', `${API}/files/upload`);
+  xhr.setRequestHeader('Authorization', `Bearer ${state.token}`);
+  xhr.send(form);
 }
 
 
@@ -3251,6 +3854,13 @@ function renderVideoModal(path, item) {
   `, 'modal-xl');
 }
 
+let currentActiveAudio = {
+  path: null,
+  name: null,
+  list: [],
+  index: 0
+};
+
 function renderAudioModal(path, item) {
   const rawUrl = `${API}/files/raw?path=${encodeURIComponent(path)}&token=${state.token}`;
   const downloadUrl = `${API}/files/download?path=${encodeURIComponent(path)}&token=${state.token}`;
@@ -3258,13 +3868,23 @@ function renderAudioModal(path, item) {
   const audioList = state.items.filter(i => i.icon === 'audio' || ['.mp3','.wav','.flac','.ogg','.m4a','.aac','.opus','.wma'].some(ext => (i.extension||'').toLowerCase() === ext));
   const currentIndex = audioList.findIndex(i => i.path === path);
 
+  currentActiveAudio = {
+    path,
+    name: item.name,
+    list: audioList,
+    index: currentIndex >= 0 ? currentIndex : 0
+  };
+
   showModal(`
     <div class="modal-header" style="display:flex;align-items:center;justify-content:space-between">
       <div>
         <h3>Player de Música</h3>
         <p style="font-size:12px;color:var(--text-secondary);margin:0">${item.size_formatted || ''} • Áudio de Alta Fidelidade</p>
       </div>
-      <button class="btn-icon-soft" onclick="closeModal()" title="Fechar">✕</button>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="gallery-tool-btn" onclick="minimizeAudioPlayer()" title="Minimizar e continuar tocando em segundo plano">⬇ Minimizar</button>
+        <button class="btn-icon-soft" onclick="closeModal()" title="Fechar">✕</button>
+      </div>
     </div>
     <div class="modal-body" style="padding:24px 32px">
       <div class="music-player-card">
@@ -3293,11 +3913,122 @@ function renderAudioModal(path, item) {
         ` : ''}
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeModal()">Fechar</button>
-      <button class="btn-primary-sm" onclick="window.open('${downloadUrl}', '_blank')">Baixar Música</button>
+    <div class="modal-footer" style="justify-content:space-between">
+      <button class="btn-secondary" onclick="minimizeAudioPlayer()">Ouvir em Segundo Plano</button>
+      <div style="display:flex;gap:10px">
+        <button class="btn-secondary" onclick="closeModal()">Parar e Fechar</button>
+        <button class="btn-primary-sm" onclick="window.open('${downloadUrl}', '_blank')">Baixar Música</button>
+      </div>
     </div>
   `);
+}
+
+function minimizeAudioPlayer() {
+  const modalAudio = document.querySelector('#modalWindow audio');
+  const bgAudio = document.getElementById('globalBgAudio');
+  const dock = document.getElementById('dockAudioPlayer');
+  if (!modalAudio || !bgAudio || !dock) return;
+
+  const curTime = modalAudio.currentTime;
+  const isPlaying = !modalAudio.paused;
+  const src = modalAudio.querySelector('source')?.src || modalAudio.src;
+
+  modalAudio.pause();
+  modalAudio.src = '';
+  document.getElementById('modalBackdrop').classList.remove('show');
+
+  bgAudio.src = src;
+  bgAudio.currentTime = curTime;
+  if (isPlaying) {
+    bgAudio.play().catch(() => {});
+  }
+
+  dock.classList.add('active');
+  document.getElementById('dockTrackTitle').textContent = currentActiveAudio.name || 'Áudio';
+  setupBgAudioListeners();
+}
+
+function setupBgAudioListeners() {
+  const bgAudio = document.getElementById('globalBgAudio');
+  const playIcon = document.getElementById('dockPlayIcon');
+  const vinyl = document.getElementById('dockVinylDisc');
+  const timeEl = document.getElementById('dockTrackTime');
+
+  bgAudio.onplay = () => {
+    vinyl.classList.remove('paused');
+    playIcon.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
+  };
+  bgAudio.onpause = () => {
+    vinyl.classList.add('paused');
+    playIcon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>';
+  };
+  bgAudio.ontimeupdate = () => {
+    const cur = formatAudioTime(bgAudio.currentTime);
+    const dur = formatAudioTime(bgAudio.duration);
+    timeEl.textContent = `${cur} / ${dur}`;
+  };
+  bgAudio.onended = () => {
+    dockNextTrack();
+  };
+}
+
+function formatAudioTime(secs) {
+  if (isNaN(secs) || secs === Infinity || !secs) return '00:00';
+  const m = Math.floor(secs / 60);
+  const s = Math.floor(secs % 60);
+  return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+}
+
+function dockTogglePlay() {
+  const bgAudio = document.getElementById('globalBgAudio');
+  if (!bgAudio) return;
+  if (bgAudio.paused) bgAudio.play().catch(() => {});
+  else bgAudio.pause();
+}
+
+function dockNextTrack() {
+  if (!currentActiveAudio.list || currentActiveAudio.list.length === 0) return;
+  let nextIdx = currentActiveAudio.index + 1;
+  if (nextIdx >= currentActiveAudio.list.length) nextIdx = 0;
+  const nextItem = currentActiveAudio.list[nextIdx];
+  if (!nextItem) return;
+
+  currentActiveAudio.index = nextIdx;
+  currentActiveAudio.path = nextItem.path;
+  currentActiveAudio.name = nextItem.name;
+
+  const bgAudio = document.getElementById('globalBgAudio');
+  bgAudio.src = `${API}/files/raw?path=${encodeURIComponent(nextItem.path)}&token=${state.token}`;
+  bgAudio.play().catch(() => {});
+  document.getElementById('dockTrackTitle').textContent = nextItem.name;
+}
+
+function closeDockAudio() {
+  const bgAudio = document.getElementById('globalBgAudio');
+  if (bgAudio) {
+    bgAudio.pause();
+    bgAudio.src = '';
+  }
+  document.getElementById('dockAudioPlayer')?.classList.remove('active');
+}
+
+function maximizeAudioPlayer() {
+  const bgAudio = document.getElementById('globalBgAudio');
+  if (!bgAudio || !currentActiveAudio.path) return;
+  const curTime = bgAudio.currentTime;
+  const isPlaying = !bgAudio.paused;
+
+  bgAudio.pause();
+  document.getElementById('dockAudioPlayer')?.classList.remove('active');
+
+  openPreview(currentActiveAudio.path);
+  setTimeout(() => {
+    const modalAudio = document.getElementById('novaAudioPlayer');
+    if (modalAudio) {
+      modalAudio.currentTime = curTime;
+      if (isPlaying) modalAudio.play().catch(() => {});
+    }
+  }, 200);
 }
 
 function renderPdfModal(path, item) {
@@ -3623,6 +4354,14 @@ function nextSlide() {
 
 async function renderTextModal(path, item) {
   const downloadUrl = `${API}/files/download?path=${encodeURIComponent(path)}&token=${state.token}`;
+  const ext = (item.extension || '.' + item.name.split('.').pop()).toLowerCase().replace('.', '');
+  
+  const prismLangMap = {
+    'js': 'javascript', 'ts': 'typescript', 'py': 'python', 'html': 'markup', 'htm': 'markup',
+    'css': 'css', 'scss': 'css', 'json': 'json', 'md': 'markdown', 'sh': 'bash', 'bash': 'bash',
+    'sql': 'sql', 'yml': 'yaml', 'yaml': 'yaml', 'dockerfile': 'docker', 'xml': 'markup'
+  };
+  const lang = prismLangMap[ext] || 'javascript';
 
   try {
     const data = await fetchApi('GET', '/files/preview?path=' + encodeURIComponent(path));
@@ -3643,19 +4382,27 @@ async function renderTextModal(path, item) {
       return;
     }
 
+    const rawContent = data.content || '';
+
     showModal(`
       <div class="modal-header" style="display:flex;align-items:center;justify-content:space-between">
         <div>
           <h3>${escapeHtml(item.name)}</h3>
-          <p style="font-size:12px;color:var(--text-secondary);margin:0">Editor de Código / Texto (${data.language || 'text'})</p>
+          <p style="font-size:12px;color:var(--text-secondary);margin:0">Editor de Código (${lang}) • Pressione <kbd style="background:rgba(255,255,255,0.1);padding:1px 4px;border-radius:3px">Ctrl+S</kbd> para salvar</p>
         </div>
-        <button class="btn-icon-soft" onclick="closeModal()" title="Fechar">✕</button>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="gallery-tool-btn" id="btnToggleCodeView" onclick="toggleCodeHighlightView('${lang}')">👁️ Visualizar Colorido</button>
+          <button class="btn-icon-soft" onclick="closeModal()" title="Fechar">✕</button>
+        </div>
       </div>
-      <div class="modal-body" style="padding:16px">
-        <textarea class="code-editor" id="codeContent">${escapeHtml(data.content || '')}</textarea>
+      <div class="modal-body" style="padding:16px;background:#0d0e14;min-height:55vh">
+        <textarea class="code-editor" id="codeContent" spellcheck="false" style="width:100%;height:56vh;background:#090a0f;border:1px solid var(--border);border-radius:var(--radius-sm);color:#f8fafc;font-family:var(--font-mono);font-size:13px;padding:14px;resize:none;outline:none;line-height:1.6" onkeydown="handleCodeEditorKey(event, '${escapeHtml(path)}')">${escapeHtml(rawContent)}</textarea>
+        <div id="codeHighlightBox" style="display:none;width:100%;max-height:56vh;overflow:auto;background:#090a0f;border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px">
+          <pre style="margin:0;font-family:var(--font-mono);font-size:13px"><code class="language-${lang}" id="codeHighlightContent"></code></pre>
+        </div>
       </div>
       <div class="modal-footer" style="justify-content:space-between">
-        <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+        <button class="btn-secondary" onclick="closeModal()">Fechar</button>
         <div style="display:flex;gap:10px">
           <button class="btn-secondary" onclick="window.open('${downloadUrl}', '_blank')">Baixar</button>
           <button class="btn-primary-sm" onclick="saveCode('${path}')">Salvar Edição</button>
@@ -3675,6 +4422,46 @@ async function renderTextModal(path, item) {
         <button class="btn-secondary" onclick="closeModal()">Fechar</button>
       </div>
     `);
+  }
+}
+
+function handleCodeEditorKey(e, path) {
+  if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
+    e.preventDefault();
+    saveCode(path);
+    return;
+  }
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const ta = e.target;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    ta.value = ta.value.substring(0, start) + '  ' + ta.value.substring(end);
+    ta.selectionStart = ta.selectionEnd = start + 2;
+  }
+}
+
+function toggleCodeHighlightView(lang) {
+  const ta = document.getElementById('codeContent');
+  const box = document.getElementById('codeHighlightBox');
+  const codeEl = document.getElementById('codeHighlightContent');
+  const btn = document.getElementById('btnToggleCodeView');
+  if (!ta || !box || !codeEl) return;
+
+  const isEditing = ta.style.display !== 'none';
+  if (isEditing) {
+    ta.style.display = 'none';
+    box.style.display = 'block';
+    codeEl.textContent = ta.value;
+    if (window.Prism) {
+      Prism.highlightElement(codeEl);
+    }
+    btn.textContent = '✏️ Modo Editor';
+  } else {
+    box.style.display = 'none';
+    ta.style.display = 'block';
+    ta.focus();
+    btn.textContent = '👁️ Visualizar Colorido';
   }
 }
 
@@ -4034,6 +4821,7 @@ function closeModal() {
   const modalVideo = document.querySelector('#modalWindow video');
   if (modalAudio) { modalAudio.pause(); modalAudio.src = ''; }
   if (modalVideo) { modalVideo.pause(); modalVideo.src = ''; }
+  if (vpsMonitorTimer) { clearInterval(vpsMonitorTimer); vpsMonitorTimer = null; }
   document.getElementById('modalBackdrop').classList.remove('show');
   state.galleryImages = [];
 }
@@ -4049,6 +4837,477 @@ function toast(msg) {
 
 function escapeHtml(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+// ============================================================================
+// LIXEIRA (RECYCLE BIN)
+// ============================================================================
+let trashData = null;
+
+async function openTrashModal() {
+  showModal(`
+    <div class="analyzer-modal" style="max-width:880px">
+      <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:10px">
+          <svg class="svg-icon lg" style="color:var(--system-red)" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          <div>
+            <h3 style="font-size:18px">Lixeira do Sistema</h3>
+            <p style="font-size:12px;color:var(--text-secondary);margin:0">Recupere arquivos apagados ou libere espaço na VPS</p>
+          </div>
+        </div>
+        <button class="btn-icon-soft" onclick="closeModal()" title="Fechar">✕</button>
+      </div>
+      <div class="modal-body" style="padding:16px 24px">
+        <div id="trashContent">
+          <div class="empty-view" style="padding:40px 0">
+            <svg class="svg-icon xl" style="color:var(--accent);animation:pulseGlow 1.5s linear infinite" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <h4 style="margin-top:12px;font-size:15px">Carregando itens da lixeira...</h4>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content:space-between">
+        <button class="btn-secondary" onclick="closeModal()">Fechar</button>
+        <button class="btn-primary-sm" style="background:var(--system-red);border-color:var(--system-red)" onclick="confirmEmptyTrash()">Esvaziar Lixeira</button>
+      </div>
+    </div>
+  `, 'modal-xl');
+
+  loadTrashItems();
+}
+
+async function loadTrashItems() {
+  try {
+    const data = await fetchApi('GET', '/trash');
+    trashData = data;
+    renderTrashBody();
+    loadTrashCount();
+  } catch (err) {
+    const content = document.getElementById('trashContent');
+    if (content) {
+      content.innerHTML = `<div class="empty-view" style="padding:30px 0"><h4 style="color:var(--system-red)">Erro</h4><p>${err.message}</p></div>`;
+    }
+  }
+}
+
+function renderTrashBody() {
+  const container = document.getElementById('trashContent');
+  if (!container || !trashData) return;
+  const items = trashData.items || [];
+
+  if (items.length === 0) {
+    container.innerHTML = `
+      <div class="empty-view" style="padding:48px 0">
+        <svg class="svg-icon xl" style="color:var(--text-tertiary)" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        <h4 style="margin-top:14px;font-size:16px">A lixeira está vazia</h4>
+        <p style="color:var(--text-tertiary);font-size:13px">Nenhum arquivo ou pasta excluído recentemente.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const headerHtml = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;background:var(--bg-card);padding:10px 16px;border-radius:var(--radius-sm);border:1px solid var(--border)">
+      <span style="font-size:12px;font-weight:700;color:var(--text-secondary)">TOTAL: <strong style="color:white">${items.length} itens</strong> ocupando <strong style="color:var(--accent)">${trashData.total_size_formatted}</strong></span>
+      <span style="font-size:11px;color:var(--text-tertiary)">Clique em Restaurar para voltar à pasta original</span>
+    </div>
+  `;
+
+  const listHtml = `
+    <div class="trash-list">
+      ${items.map(item => `
+        <div class="trash-item-row">
+          <span class="icon-wrapper ${item.icon}" style="width:28px;height:28px">${getIconSvg(item)}</span>
+          <div style="min-width:0;overflow:hidden">
+            <div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escapeHtml(item.original_name)}">${escapeHtml(item.original_name)}</div>
+            <div style="font-size:11px;color:var(--text-tertiary);font-family:var(--font-mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escapeHtml(item.original_path)}">Origem: ${escapeHtml(item.original_path)}</div>
+          </div>
+          <div style="font-size:12px;color:var(--text-secondary);text-align:right">${item.size_formatted}</div>
+          <div style="font-size:11px;color:var(--text-tertiary);text-align:right">${formatDate(item.deleted_at)}</div>
+          <div style="display:flex;justify-content:flex-end;gap:6px">
+            <button class="btn-row-action" style="color:var(--accent)" onclick="restoreTrashItem('${escapeHtml(item.trash_name)}')" title="Restaurar ao local original">↩ Restaurar</button>
+            <button class="btn-row-action" style="color:var(--system-red)" onclick="deleteTrashSingleItem('${escapeHtml(item.trash_name)}')" title="Excluir Definitivamente">✕</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  container.innerHTML = headerHtml + listHtml;
+}
+
+async function restoreTrashItem(trashName) {
+  try {
+    const form = new FormData();
+    form.append('trash_name', trashName);
+    toast('Restaurando item...', 'info');
+    await fetchApi('POST', '/trash/restore', form);
+    toast('Item restaurado com sucesso!', 'success');
+    loadTrashItems();
+    loadFiles(state.currentPath);
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+async function deleteTrashSingleItem(trashName) {
+  try {
+    await fetchApi('DELETE', `/trash/item?trash_name=${encodeURIComponent(trashName)}`);
+    toast('Item excluído definitivamente', 'info');
+    loadTrashItems();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+async function confirmEmptyTrash() {
+  if (!confirm('Deseja realmente esvaziar a lixeira e apagar todos os arquivos definitivamente?')) return;
+  try {
+    toast('Esvaziando lixeira...', 'info');
+    const data = await fetchApi('DELETE', '/trash/empty');
+    toast(`Lixeira esvaziada! ${data.freed_formatted} liberados.`, 'success');
+    loadTrashItems();
+    loadStorage();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+async function loadTrashCount() {
+  try {
+    const data = await fetchApi('GET', '/trash');
+    const badge = document.getElementById('trashBadge');
+    if (badge) {
+      if (data.count > 0) {
+        badge.textContent = data.count;
+        badge.style.display = 'inline-block';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+  } catch (e) {}
+}
+
+
+// ============================================================================
+// MONITOR DO SISTEMA / VPS
+// ============================================================================
+let vpsMonitorTimer = null;
+
+async function openVpsMonitor() {
+  showModal(`
+    <div class="analyzer-modal" style="max-width:880px">
+      <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:10px">
+          <svg class="svg-icon lg" style="color:var(--accent)" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+          <div>
+            <h3 style="font-size:18px">Monitor de Recursos da VPS</h3>
+            <p style="font-size:12px;color:var(--text-secondary);margin:0">Uso de hardware em tempo real e saúde do container NovaDrive</p>
+          </div>
+        </div>
+        <button class="btn-icon-soft" onclick="closeModal()" title="Fechar">✕</button>
+      </div>
+      <div class="modal-body" style="padding:20px 24px">
+        <div id="vpsStatsContent">
+          <div class="empty-view" style="padding:40px 0">
+            <svg class="svg-icon xl" style="color:var(--accent);animation:pulseGlow 1.5s linear infinite" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <h4 style="margin-top:12px;font-size:15px">Consultando métricas da VPS...</h4>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content:space-between">
+        <span style="font-size:11px;color:var(--text-tertiary);display:flex;align-items:center;gap:6px">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--system-green);display:inline-block;animation:pulseGlow 1s infinite"></span>
+          Atualizando automaticamente a cada 3s
+        </span>
+        <button class="btn-secondary" onclick="closeModal()">Fechar</button>
+      </div>
+    </div>
+  `, 'modal-xl');
+
+  updateVpsStats();
+  if (vpsMonitorTimer) clearInterval(vpsMonitorTimer);
+  vpsMonitorTimer = setInterval(updateVpsStats, 3000);
+}
+
+async function updateVpsStats() {
+  const container = document.getElementById('vpsStatsContent');
+  if (!container) {
+    if (vpsMonitorTimer) { clearInterval(vpsMonitorTimer); vpsMonitorTimer = null; }
+    return;
+  }
+
+  try {
+    const s = await fetchApi('GET', '/system/stats');
+    const cpuColor = s.cpu.percent > 80 ? 'var(--system-red)' : s.cpu.percent > 50 ? '#f59e0b' : 'var(--accent)';
+    const ramColor = s.memory.percent > 85 ? 'var(--system-red)' : s.memory.percent > 65 ? '#f59e0b' : '#3b82f6';
+    const diskColor = s.disk.percent > 90 ? 'var(--system-red)' : s.disk.percent > 70 ? '#f59e0b' : 'var(--system-green)';
+
+    container.innerHTML = `
+      <div class="vps-stats-grid">
+        <div class="vps-stat-card">
+          <div class="title-row">
+            <span class="label">Processador (CPU)</span>
+            <span style="font-size:11px;color:var(--text-tertiary)">${s.cpu.cores_logical || 1} Núcleos</span>
+          </div>
+          <div class="val" style="color:${cpuColor}">${s.cpu.percent}%</div>
+          <div class="vps-meter-track">
+            <div class="vps-meter-fill" style="width:${Math.min(s.cpu.percent, 100)}%;background:${cpuColor}"></div>
+          </div>
+          <div class="vps-subtext">Carga de processamento</div>
+        </div>
+
+        <div class="vps-stat-card">
+          <div class="title-row">
+            <span class="label">Memória RAM</span>
+            <span style="font-size:11px;color:var(--text-tertiary)">${s.memory.percent}% em uso</span>
+          </div>
+          <div class="val" style="color:${ramColor}">${s.memory.used_formatted}</div>
+          <div class="vps-meter-track">
+            <div class="vps-meter-fill" style="width:${Math.min(s.memory.percent, 100)}%;background:${ramColor}"></div>
+          </div>
+          <div class="vps-subtext">De um total de ${s.memory.total_formatted}</div>
+        </div>
+
+        <div class="vps-stat-card">
+          <div class="title-row">
+            <span class="label">Disco do Host</span>
+            <span style="font-size:11px;color:var(--text-tertiary)">${s.disk.free_formatted} livres</span>
+          </div>
+          <div class="val" style="color:${diskColor}">${s.disk.percent}%</div>
+          <div class="vps-meter-track">
+            <div class="vps-meter-fill" style="width:${Math.min(s.disk.percent, 100)}%;background:${diskColor}"></div>
+          </div>
+          <div class="vps-subtext">Usados ${s.disk.used_formatted} de ${s.disk.total_formatted}</div>
+        </div>
+
+        <div class="vps-stat-card">
+          <div class="title-row">
+            <span class="label">Uptime do Servidor</span>
+            <span style="font-size:11px;color:var(--system-green)">● Ativo</span>
+          </div>
+          <div class="val" style="font-size:20px">${s.uptime.formatted}</div>
+          <div class="vps-subtext" style="margin-top:14px">Container: ${s.process.rss_formatted} RAM</div>
+        </div>
+      </div>
+
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px;display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;font-size:12px">
+        <div><strong style="color:var(--text-secondary)">Sistema Operacional:</strong> <span style="color:white">${s.platform.system} (${s.platform.machine})</span></div>
+        <div><strong style="color:var(--text-secondary)">Kernel / Release:</strong> <span style="color:white">${s.platform.release}</span></div>
+        <div><strong style="color:var(--text-secondary)">Hostname:</strong> <span style="color:white">${s.platform.hostname}</span></div>
+        <div><strong style="color:var(--text-secondary)">Python Runtime:</strong> <span style="color:white">v${s.platform.python}</span></div>
+      </div>
+    `;
+  } catch (err) {}
+}
+
+
+// ============================================================================
+// GESTÃO DE USUÁRIOS
+// ============================================================================
+async function openUsersManager() {
+  showModal(`
+    <div class="analyzer-modal" style="max-width:860px">
+      <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:10px">
+          <svg class="svg-icon lg" style="color:var(--accent)" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <div>
+            <h3 style="font-size:18px">Gerenciamento de Usuários</h3>
+            <p style="font-size:12px;color:var(--text-secondary);margin:0">Controle de acessos, senhas e escopos de diretório</p>
+          </div>
+        </div>
+        <button class="btn-icon-soft" onclick="closeModal()" title="Fechar">✕</button>
+      </div>
+      <div class="modal-body" style="padding:16px 24px">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+          <button class="btn-primary-sm" onclick="promptNewUser()">+ Novo Usuário</button>
+        </div>
+        <div id="usersContent">
+          <div class="empty-view" style="padding:30px 0"><p>Carregando usuários...</p></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal()">Fechar</button>
+      </div>
+    </div>
+  `, 'modal-lg');
+
+  loadUsersList();
+}
+
+async function loadUsersList() {
+  const container = document.getElementById('usersContent');
+  if (!container) return;
+  try {
+    const data = await fetchApi('GET', '/users');
+    const users = data.users || [];
+    container.innerHTML = `
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Usuário</th>
+            <th>Nome</th>
+            <th>Função</th>
+            <th>Escopo</th>
+            <th style="text-align:right">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${users.map(u => `
+            <tr>
+              <td><strong style="color:white">${escapeHtml(u.username)}</strong></td>
+              <td>${escapeHtml(u.name)}</td>
+              <td><span class="badge-role ${u.role}">${u.role.toUpperCase()}</span></td>
+              <td><code style="font-size:11px;color:var(--accent)">${escapeHtml(u.scope)}</code></td>
+              <td style="text-align:right">
+                <button class="btn-row-action" onclick="promptEditUser('${escapeHtml(u.username)}', '${escapeHtml(u.name)}', '${u.role}', '${escapeHtml(u.scope)}')">Editar</button>
+                ${u.username !== 'admin' ? `
+                  <button class="btn-row-action" style="color:var(--system-red)" onclick="deleteUserAction('${escapeHtml(u.username)}')">Excluir</button>
+                ` : ''}
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  } catch (err) {
+    container.innerHTML = `<div class="empty-view"><p style="color:var(--system-red)">${err.message}</p></div>`;
+  }
+}
+
+function promptNewUser() {
+  showModal(`
+    <div class="modal-header">
+      <h3>Criar Novo Usuário</h3>
+    </div>
+    <div class="modal-body" style="padding:20px;display:flex;flex-direction:column;gap:12px">
+      <div class="field">
+        <label>Nome de Usuário (login)</label>
+        <input type="text" id="newUsername" placeholder="Ex: joao" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Nome Completo</label>
+        <input type="text" id="newName" placeholder="Ex: João Silva">
+      </div>
+      <div class="field">
+        <label>Senha</label>
+        <input type="password" id="newPassword" placeholder="Mínimo 4 caracteres" autocomplete="new-password">
+      </div>
+      <div class="field">
+        <label>Função</label>
+        <select id="newRole" style="width:100%;padding:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);color:white;outline:none">
+          <option value="user">Usuário Comum</option>
+          <option value="admin">Administrador</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Escopo de Pasta (deixe / para acesso geral)</label>
+        <input type="text" id="newScope" value="/" placeholder="/workspace ou /">
+      </div>
+    </div>
+    <div class="modal-footer" style="justify-content:space-between">
+      <button class="btn-secondary" onclick="openUsersManager()">Voltar</button>
+      <button class="btn-primary-sm" onclick="createUserAction()">Salvar Usuário</button>
+    </div>
+  `);
+}
+
+async function createUserAction() {
+  const username = document.getElementById('newUsername').value.trim();
+  const name = document.getElementById('newName').value.trim();
+  const password = document.getElementById('newPassword').value;
+  const role = document.getElementById('newRole').value;
+  const scope = document.getElementById('newScope').value.trim() || '/';
+
+  if (!username || !password) {
+    toast('Preencha usuário e senha', 'error');
+    return;
+  }
+
+  try {
+    const form = new FormData();
+    form.append('username', username);
+    form.append('name', name || username);
+    form.append('password', password);
+    form.append('role', role);
+    form.append('scope', scope);
+    await fetchApi('POST', '/users', form);
+    toast('Usuário criado com sucesso!', 'success');
+    openUsersManager();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+function promptEditUser(username, currentName, currentRole, currentScope) {
+  showModal(`
+    <div class="modal-header">
+      <h3>Editar Usuário: ${escapeHtml(username)}</h3>
+    </div>
+    <div class="modal-body" style="padding:20px;display:flex;flex-direction:column;gap:12px">
+      <div class="field">
+        <label>Nome Completo</label>
+        <input type="text" id="editName" value="${escapeHtml(currentName)}">
+      </div>
+      <div class="field">
+        <label>Nova Senha (deixe em branco para não alterar)</label>
+        <input type="password" id="editPassword" placeholder="Deixe em branco para manter a atual" autocomplete="new-password">
+      </div>
+      <div class="field">
+        <label>Função</label>
+        <select id="editRole" style="width:100%;padding:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);color:white;outline:none" ${username === 'admin' ? 'disabled' : ''}>
+          <option value="user" ${currentRole === 'user' ? 'selected' : ''}>Usuário Comum</option>
+          <option value="admin" ${currentRole === 'admin' ? 'selected' : ''}>Administrador</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Escopo de Pasta</label>
+        <input type="text" id="editScope" value="${escapeHtml(currentScope)}">
+      </div>
+    </div>
+    <div class="modal-footer" style="justify-content:space-between">
+      <button class="btn-secondary" onclick="openUsersManager()">Voltar</button>
+      <button class="btn-primary-sm" onclick="saveEditUserAction('${escapeHtml(username)}')">Atualizar</button>
+    </div>
+  `);
+}
+
+async function saveEditUserAction(username) {
+  const name = document.getElementById('editName').value.trim();
+  const password = document.getElementById('editPassword').value;
+  const role = document.getElementById('editRole')?.value;
+  const scope = document.getElementById('editScope').value.trim();
+
+  try {
+    const form = new FormData();
+    if (name) form.append('name', name);
+    if (password && password.trim()) form.append('password', password);
+    if (role) form.append('role', role);
+    if (scope) form.append('scope', scope);
+
+    await fetchApi('PUT', `/users/${encodeURIComponent(username)}`, form);
+    toast('Usuário atualizado com sucesso!', 'success');
+    openUsersManager();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+async function deleteUserAction(username) {
+  if (!confirm(`Deseja realmente excluir o usuário "${username}"?`)) return;
+  try {
+    await fetchApi('DELETE', `/users/${encodeURIComponent(username)}`);
+    toast('Usuário excluído com sucesso!', 'info');
+    loadUsersList();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+// Service Worker Registration for PWA
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
 }
 
 // ============================================================================

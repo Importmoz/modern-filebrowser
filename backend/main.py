@@ -33,10 +33,11 @@ from pathlib import Path
 from typing import Optional, List
 
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Depends, Query, Request, Header
-from fastapi.responses import StreamingResponse, JSONResponse, FileResponse, HTMLResponse
+from fastapi.responses import StreamingResponse, JSONResponse, FileResponse, HTMLResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import jwt
+import platform
 
 # =============================================================================
 # Configuração
@@ -943,6 +944,26 @@ async def rename_file(
         "renamed": True
     }
 
+def load_trash_metadata() -> dict:
+    """Carrega metadados da lixeira."""
+    trash_dir = Path(ROOT_PATH) / ".trash"
+    meta_file = trash_dir / "metadata.json"
+    if not meta_file.exists():
+        return {}
+    try:
+        with open(meta_file, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+def save_trash_metadata(meta: dict):
+    """Salva metadados da lixeira."""
+    trash_dir = Path(ROOT_PATH) / ".trash"
+    trash_dir.mkdir(parents=True, exist_ok=True)
+    meta_file = trash_dir / "metadata.json"
+    with open(meta_file, "w", encoding="utf-8") as f:
+        json.dump(meta, f, indent=2, ensure_ascii=False)
+
 @app.delete("/api/files")
 async def delete_file(
     path: str = Query(...),
@@ -979,8 +1000,170 @@ async def delete_file(
                 trash_path = trash_dir / f"{base}_{counter}{ext}"
                 counter += 1
         
+        is_dir = full_path.is_dir()
+        size_bytes = calculate_dir_size(full_path)[0] if is_dir else full_path.stat().st_size
+        
         shutil.move(str(full_path), str(trash_path))
+        
+        meta = load_trash_metadata()
+        meta[trash_path.name] = {
+            "original_path": path,
+            "name": full_path.name,
+            "is_dir": is_dir,
+            "deleted_at": datetime.datetime.now().isoformat(),
+            "deleted_by": current_user.get("username", "admin"),
+            "size": size_bytes,
+            "size_formatted": format_size(size_bytes)
+        }
+        save_trash_metadata(meta)
         return {"deleted": True, "permanent": False, "trash_path": str(trash_path.relative_to(ROOT_PATH))}
+
+@app.get("/api/trash")
+async def get_trash(current_user: dict = Depends(get_current_user)):
+    """Lista todos os arquivos e pastas na lixeira com metadados."""
+    trash_dir = Path(ROOT_PATH) / ".trash"
+    trash_dir.mkdir(parents=True, exist_ok=True)
+    meta = load_trash_metadata()
+    
+    items = []
+    total_size = 0
+    
+    for item in trash_dir.iterdir():
+        if item.name == "metadata.json":
+            continue
+        item_meta = meta.get(item.name, {})
+        is_dir = item.is_dir()
+        size = item_meta.get("size")
+        if size is None:
+            size = calculate_dir_size(item)[0] if is_dir else item.stat().st_size
+        total_size += size
+        
+        items.append({
+            "trash_name": item.name,
+            "original_name": item_meta.get("name", item.name),
+            "original_path": item_meta.get("original_path", "/workspace/" + item.name),
+            "deleted_at": item_meta.get("deleted_at", datetime.datetime.fromtimestamp(item.stat().st_mtime).isoformat()),
+            "deleted_by": item_meta.get("deleted_by", "admin"),
+            "size": size,
+            "size_formatted": format_size(size),
+            "is_dir": is_dir,
+            "icon": get_file_icon(item.name, is_dir)
+        })
+        
+    items.sort(key=lambda x: x["deleted_at"], reverse=True)
+    return {
+        "items": items,
+        "count": len(items),
+        "total_size": total_size,
+        "total_size_formatted": format_size(total_size)
+    }
+
+@app.post("/api/trash/restore")
+async def restore_trash_item(
+    trash_name: str = Form(...),
+    current_user: dict = Depends(get_current_user),
+    x_secure_code: Optional[str] = Header(None)
+):
+    """Restaura item da lixeira para seu local original."""
+    trash_dir = Path(ROOT_PATH) / ".trash"
+    trash_path = trash_dir / trash_name
+    
+    if not trash_path.exists():
+        raise HTTPException(404, "Item não encontrado na lixeira")
+        
+    meta = load_trash_metadata()
+    item_meta = meta.get(trash_name, {})
+    original_path = item_meta.get("original_path", f"/workspace/{trash_name}")
+    
+    check_security(original_path, x_secure_code)
+    dest_path = get_full_path(original_path)
+    
+    # Garante que a pasta pai existe
+    dest_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    # Se já existir arquivo com mesmo nome no destino, evita sobrescrever
+    if dest_path.exists():
+        base = dest_path.stem
+        ext = dest_path.suffix if not trash_path.is_dir() else ""
+        counter = 1
+        while dest_path.exists():
+            dest_path = dest_path.parent / f"{base} (restaurado {counter}){ext}"
+            counter += 1
+            
+    shutil.move(str(trash_path), str(dest_path))
+    
+    if trash_name in meta:
+        del meta[trash_name]
+        save_trash_metadata(meta)
+    try:
+        rel_restored = str(dest_path.resolve().relative_to(Path(ROOT_PATH).resolve()))
+    except Exception:
+        rel_restored = dest_path.name
+        
+    return {
+        "restored": True,
+        "trash_name": trash_name,
+        "restored_to": rel_restored
+    }
+
+@app.delete("/api/trash/empty")
+async def empty_trash(
+    current_user: dict = Depends(get_current_user),
+    x_secure_code: Optional[str] = Header(None)
+):
+    """Esvazia a lixeira permanentemente."""
+    trash_dir = Path(ROOT_PATH) / ".trash"
+    trash_dir.mkdir(parents=True, exist_ok=True)
+    
+    total_freed = 0
+    count = 0
+    for item in list(trash_dir.iterdir()):
+        if item.name == "metadata.json":
+            continue
+        try:
+            if item.is_dir():
+                size, _, _ = calculate_dir_size(item)
+                total_freed += size
+                shutil.rmtree(item)
+            else:
+                total_freed += item.stat().st_size
+                item.unlink()
+            count += 1
+        except Exception:
+            pass
+            
+    save_trash_metadata({})
+    return {
+        "empty": True,
+        "count": count,
+        "freed_bytes": total_freed,
+        "freed_formatted": format_size(total_freed)
+    }
+
+@app.delete("/api/trash/item")
+async def delete_trash_item(
+    trash_name: str = Query(...),
+    current_user: dict = Depends(get_current_user),
+    x_secure_code: Optional[str] = Header(None)
+):
+    """Exclui definitivamente um item da lixeira."""
+    trash_dir = Path(ROOT_PATH) / ".trash"
+    trash_path = trash_dir / trash_name
+    
+    if not trash_path.exists():
+        raise HTTPException(404, "Item não encontrado na lixeira")
+        
+    if trash_path.is_dir():
+        shutil.rmtree(trash_path)
+    else:
+        trash_path.unlink()
+        
+    meta = load_trash_metadata()
+    if trash_name in meta:
+        del meta[trash_name]
+        save_trash_metadata(meta)
+        
+    return {"deleted": True, "trash_name": trash_name}
 
 @app.get("/api/files/download")
 async def download_file(
@@ -1087,6 +1270,235 @@ async def raw_file(
         media_type=media_type,
         content_disposition_type="inline"
     )
+
+@app.get("/api/files/thumbnail")
+async def get_thumbnail(
+    path: str = Query(...),
+    token: Optional[str] = Query(None),
+    size: int = Query(256),
+    current_user: dict = Depends(get_current_user)
+):
+    """Retorna miniatura otimizada de imagem para exibição rápida na grade."""
+    full_path = get_full_path(path)
+    if not full_path.exists() or not full_path.is_file():
+        raise HTTPException(404, "Arquivo não encontrado")
+        
+    ext = full_path.suffix.lower()
+    img_exts = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif", ".ico", ".tiff", ".tif"}
+    if ext not in img_exts:
+        raise HTTPException(400, "Não é uma imagem suportada para miniatura")
+        
+    try:
+        from PIL import Image
+        with Image.open(full_path) as im:
+            if im.mode in ("RGBA", "LA") and ext in (".jpg", ".jpeg"):
+                bg = Image.new("RGB", im.size, (255, 255, 255))
+                bg.paste(im, mask=im.split()[-1])
+                im = bg
+            elif im.mode not in ("RGB", "RGBA"):
+                im = im.convert("RGB")
+                
+            im.thumbnail((size, size), Image.Resampling.LANCZOS)
+            out_buf = io.BytesIO()
+            im.save(out_buf, format="WEBP", quality=80)
+            out_buf.seek(0)
+            return Response(
+                content=out_buf.getvalue(),
+                media_type="image/webp",
+                headers={
+                    "Cache-Control": "public, max-age=604800, immutable",
+                    "Content-Disposition": f'inline; filename="{full_path.stem}_thumb.webp"'
+                }
+            )
+    except Exception:
+        mime_type, _ = mimetypes.guess_type(str(full_path))
+        return FileResponse(
+            path=str(full_path),
+            filename=full_path.name,
+            media_type=mime_type or "image/jpeg",
+            content_disposition_type="inline"
+        )
+
+@app.post("/api/files/batch/download")
+async def batch_download(
+    request: Request,
+    current_user: dict = Depends(get_current_user)
+):
+    """Gera um arquivo ZIP on-the-fly contendo todos os arquivos e pastas selecionados."""
+    body = await request.json()
+    paths = body.get("paths", [])
+    if not paths:
+        raise HTTPException(400, "Nenhum arquivo selecionado")
+        
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+        for p in paths:
+            try:
+                full_path = get_full_path(p)
+                if not full_path.exists():
+                    continue
+                if full_path.is_file():
+                    zf.write(full_path, full_path.name)
+                elif full_path.is_dir():
+                    for root, dirs, files in os.walk(full_path):
+                        for file in files:
+                            fp = Path(root) / file
+                            arcname = str(fp.relative_to(full_path.parent))
+                            zf.write(fp, arcname)
+            except Exception:
+                pass
+                
+    zip_buffer.seek(0)
+    zip_name = f"novadrive_selecionados_{int(datetime.datetime.now().timestamp())}.zip"
+    return StreamingResponse(
+        zip_buffer,
+        media_type="application/zip",
+        headers={"Content-Disposition": f'attachment; filename="{zip_name}"'}
+    )
+
+@app.post("/api/files/batch/delete")
+async def batch_delete(
+    request: Request,
+    current_user: dict = Depends(get_current_user),
+    x_secure_code: Optional[str] = Header(None)
+):
+    """Exclui múltiplos arquivos ou pastas em lote (move para lixeira ou permanente)."""
+    body = await request.json()
+    paths = body.get("paths", [])
+    permanent = body.get("permanent", False)
+    
+    trash_dir = Path(ROOT_PATH) / ".trash"
+    trash_dir.mkdir(parents=True, exist_ok=True)
+    meta = load_trash_metadata() if not permanent else None
+    
+    deleted = []
+    errors = []
+    
+    for p in paths:
+        try:
+            check_security(p, x_secure_code)
+            full_path = get_full_path(p)
+            if not full_path.exists():
+                continue
+            if permanent:
+                if full_path.is_dir():
+                    shutil.rmtree(full_path)
+                else:
+                    full_path.unlink()
+                deleted.append(p)
+            else:
+                trash_path = trash_dir / full_path.name
+                if trash_path.exists():
+                    base = full_path.stem
+                    ext = full_path.suffix if not full_path.is_dir() else ""
+                    c = 1
+                    while trash_path.exists():
+                        trash_path = trash_dir / f"{base}_{c}{ext}"
+                        c += 1
+                is_dir = full_path.is_dir()
+                size_bytes = calculate_dir_size(full_path)[0] if is_dir else full_path.stat().st_size
+                shutil.move(str(full_path), str(trash_path))
+                if meta is not None:
+                    meta[trash_path.name] = {
+                        "original_path": p,
+                        "name": full_path.name,
+                        "is_dir": is_dir,
+                        "deleted_at": datetime.datetime.now().isoformat(),
+                        "deleted_by": current_user.get("username", "admin"),
+                        "size": size_bytes,
+                        "size_formatted": format_size(size_bytes)
+                    }
+                deleted.append(p)
+        except Exception as e:
+            errors.append({"path": p, "error": str(e)})
+            
+    if meta is not None:
+        save_trash_metadata(meta)
+        
+    return {"deleted_count": len(deleted), "deleted": deleted, "errors": errors}
+
+@app.post("/api/files/batch/move")
+async def batch_move(
+    request: Request,
+    current_user: dict = Depends(get_current_user),
+    x_secure_code: Optional[str] = Header(None)
+):
+    """Move múltiplos arquivos ou pastas para um destino."""
+    body = await request.json()
+    paths = body.get("paths", [])
+    destination = body.get("destination", "/")
+    
+    check_security(destination, x_secure_code)
+    dst_parent = get_full_path(destination)
+    if not dst_parent.exists() or not dst_parent.is_dir():
+        raise HTTPException(400, "Destino inválido ou inexistente")
+        
+    moved = []
+    errors = []
+    
+    for p in paths:
+        try:
+            check_security(p, x_secure_code)
+            src = get_full_path(p)
+            if not src.exists():
+                continue
+            dst = dst_parent / src.name
+            if dst.exists():
+                base = src.stem
+                ext = src.suffix if not src.is_dir() else ""
+                c = 1
+                while dst.exists():
+                    dst = dst_parent / f"{base} (cópia {c}){ext}"
+                    c += 1
+            shutil.move(str(src), str(dst))
+            moved.append(p)
+        except Exception as e:
+            errors.append({"path": p, "error": str(e)})
+            
+    return {"moved_count": len(moved), "moved": moved, "errors": errors}
+
+@app.post("/api/files/batch/copy")
+async def batch_copy(
+    request: Request,
+    current_user: dict = Depends(get_current_user),
+    x_secure_code: Optional[str] = Header(None)
+):
+    """Copia múltiplos arquivos ou pastas para um destino."""
+    body = await request.json()
+    paths = body.get("paths", [])
+    destination = body.get("destination", "/")
+    
+    check_security(destination, x_secure_code)
+    dst_parent = get_full_path(destination)
+    if not dst_parent.exists() or not dst_parent.is_dir():
+        raise HTTPException(400, "Destino inválido ou inexistente")
+        
+    copied = []
+    errors = []
+    
+    for p in paths:
+        try:
+            check_security(p, x_secure_code)
+            src = get_full_path(p)
+            if not src.exists():
+                continue
+            dst = dst_parent / src.name
+            if dst.exists():
+                base = src.stem
+                ext = src.suffix if not src.is_dir() else ""
+                c = 1
+                while dst.exists():
+                    dst = dst_parent / f"{base} (cópia {c}){ext}"
+                    c += 1
+            if src.is_dir():
+                shutil.copytree(src, dst)
+            else:
+                shutil.copy2(src, dst)
+            copied.append(p)
+        except Exception as e:
+            errors.append({"path": p, "error": str(e)})
+            
+    return {"copied_count": len(copied), "copied": copied, "errors": errors}
 
 @app.post("/api/files/copy")
 async def copy_file(
@@ -1601,6 +2013,207 @@ async def get_folder_size(
         "files_count": files,
         "dirs_count": dirs
     }
+# =============================================================================
+# Monitoramento do Sistema / VPS
+# =============================================================================
+
+@app.get("/api/system/stats")
+async def get_system_stats(current_user: dict = Depends(get_current_user)):
+    """Retorna estatísticas completas de hardware, sistema e recursos da VPS."""
+    stats = {
+        "timestamp": datetime.datetime.now().isoformat(),
+        "platform": {
+            "system": platform.system(),
+            "release": platform.release(),
+            "machine": platform.machine(),
+            "python": platform.python_version(),
+            "hostname": platform.node()
+        }
+    }
+    
+    # 1. CPU
+    try:
+        import psutil
+        stats["cpu"] = {
+            "percent": psutil.cpu_percent(interval=None),
+            "cores_logical": psutil.cpu_count(logical=True),
+            "cores_physical": psutil.cpu_count(logical=False) or psutil.cpu_count(logical=True)
+        }
+    except Exception:
+        stats["cpu"] = {"percent": 0, "cores_logical": os.cpu_count() or 1, "cores_physical": os.cpu_count() or 1}
+        
+    # 2. RAM
+    try:
+        import psutil
+        vm = psutil.virtual_memory()
+        stats["memory"] = {
+            "total": vm.total,
+            "total_formatted": format_size(vm.total),
+            "used": vm.used,
+            "used_formatted": format_size(vm.used),
+            "available": vm.available,
+            "available_formatted": format_size(vm.available),
+            "percent": vm.percent
+        }
+    except Exception:
+        stats["memory"] = {"total": 0, "total_formatted": "—", "used": 0, "used_formatted": "—", "percent": 0}
+        
+    # 3. Disco
+    try:
+        du = shutil.disk_usage(ROOT_PATH)
+        stats["disk"] = {
+            "total": du.total,
+            "total_formatted": format_size(du.total),
+            "used": du.used,
+            "used_formatted": format_size(du.used),
+            "free": du.free,
+            "free_formatted": format_size(du.free),
+            "percent": round((du.used / du.total) * 100, 1) if du.total > 0 else 0
+        }
+    except Exception:
+        stats["disk"] = {"total": 0, "total_formatted": "—", "used": 0, "used_formatted": "—", "percent": 0}
+        
+    # 4. Uptime
+    uptime_seconds = 0
+    try:
+        import psutil
+        boot = psutil.boot_time()
+        uptime_seconds = int(time.time() - boot)
+    except Exception:
+        if os.path.exists("/proc/uptime"):
+            try:
+                with open("/proc/uptime", "r") as f:
+                    uptime_seconds = int(float(f.readline().split()[0]))
+            except Exception:
+                pass
+                
+    days, rem = divmod(uptime_seconds, 86400)
+    hours, rem = divmod(rem, 3600)
+    mins, _ = divmod(rem, 60)
+    stats["uptime"] = {
+        "seconds": uptime_seconds,
+        "formatted": f"{days}d {hours}h {mins}m" if days > 0 else f"{hours}h {mins}m"
+    }
+    
+    # 5. Processo NovaDrive
+    try:
+        import psutil
+        proc = psutil.Process()
+        mem_info = proc.memory_info()
+        stats["process"] = {
+            "rss": mem_info.rss,
+            "rss_formatted": format_size(mem_info.rss),
+            "cpu_percent": proc.cpu_percent(interval=None)
+        }
+    except Exception:
+        stats["process"] = {"rss": 0, "rss_formatted": "—", "cpu_percent": 0}
+        
+    return stats
+
+
+# =============================================================================
+# Gestão de Usuários (Apenas Administrador)
+# =============================================================================
+
+@app.get("/api/users")
+async def list_users(current_user: dict = Depends(get_current_user)):
+    """Lista usuários cadastrados (apenas admin)."""
+    if current_user.get("role") != "admin":
+        raise HTTPException(403, "Apenas administradores podem gerenciar usuários")
+    users = load_users()
+    res = []
+    for uname, data in users.items():
+        res.append({
+            "username": uname,
+            "name": data.get("name", uname),
+            "role": data.get("role", "user"),
+            "scope": data.get("scope", "/"),
+            "created_at": data.get("created_at")
+        })
+    return {"users": res}
+
+@app.post("/api/users")
+async def create_user(
+    username: str = Form(...),
+    password: str = Form(...),
+    name: str = Form(...),
+    role: str = Form("user"),
+    scope: str = Form("/"),
+    current_user: dict = Depends(get_current_user)
+):
+    """Cria um novo usuário (apenas admin)."""
+    if current_user.get("role") != "admin":
+        raise HTTPException(403, "Apenas administradores podem criar usuários")
+    users = load_users()
+    clean_username = username.strip().lower()
+    if not clean_username or len(clean_username) < 3:
+        raise HTTPException(400, "Nome de usuário deve ter pelo menos 3 caracteres")
+    if clean_username in users:
+        raise HTTPException(409, "Usuário já existe")
+    if len(password) < 4:
+        raise HTTPException(400, "A senha deve ter pelo menos 4 caracteres")
+        
+    users[clean_username] = {
+        "password": hash_password(password),
+        "name": name.strip() or clean_username,
+        "role": role if role in ("admin", "user") else "user",
+        "scope": scope.strip() or "/",
+        "created_at": datetime.datetime.now().isoformat()
+    }
+    save_users(users)
+    return {"created": True, "username": clean_username}
+
+@app.put("/api/users/{target_username}")
+async def update_user(
+    target_username: str,
+    password: Optional[str] = Form(None),
+    name: Optional[str] = Form(None),
+    role: Optional[str] = Form(None),
+    scope: Optional[str] = Form(None),
+    current_user: dict = Depends(get_current_user)
+):
+    """Atualiza dados, senha ou escopo de um usuário (apenas admin)."""
+    if current_user.get("role") != "admin":
+        raise HTTPException(403, "Apenas administradores podem editar usuários")
+    users = load_users()
+    if target_username not in users:
+        raise HTTPException(404, "Usuário não encontrado")
+        
+    u = users[target_username]
+    if name is not None and name.strip():
+        u["name"] = name.strip()
+    if password is not None and len(password.strip()) >= 4:
+        u["password"] = hash_password(password.strip())
+    if role is not None and role in ("admin", "user"):
+        if target_username == "admin" and role != "admin":
+            raise HTTPException(400, "O usuário admin principal não pode perder status de administrador")
+        u["role"] = role
+    if scope is not None:
+        u["scope"] = scope.strip() or "/"
+        
+    save_users(users)
+    return {"updated": True, "username": target_username}
+
+@app.delete("/api/users/{target_username}")
+async def delete_user(
+    target_username: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Exclui um usuário (apenas admin)."""
+    if current_user.get("role") != "admin":
+        raise HTTPException(403, "Apenas administradores podem excluir usuários")
+    if target_username == "admin":
+        raise HTTPException(400, "O usuário admin principal não pode ser excluído")
+    if target_username == current_user.get("username"):
+        raise HTTPException(400, "Você não pode excluir a sua própria conta ativa")
+        
+    users = load_users()
+    if target_username not in users:
+        raise HTTPException(404, "Usuário não encontrado")
+        
+    del users[target_username]
+    save_users(users)
+    return {"deleted": True, "username": target_username}
 
 # =============================================================================
 # Frontend Static Files (deve ser montado APÓS todas as rotas da API)
