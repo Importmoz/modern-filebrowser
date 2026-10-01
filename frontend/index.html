@@ -323,6 +323,17 @@ body {
   margin: 0;
 }
 
+/* Overlay da gaveta (mobile/tablet) — base global */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 199;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+.sidebar-overlay.active { display: block; }
+
 .brand-title {
   font-size: 20px;
   font-weight: 800;
@@ -1349,11 +1360,6 @@ body {
 <script>
 
 
-function toggleDesktopSidebar() {
-  const sidebar = document.querySelector('.sidebar');
-  sidebar.classList.toggle('collapsed');
-}
-
 // ============================================================================
 // KEYBOARD SHORTCUTS
 // ============================================================================
@@ -2253,53 +2259,70 @@ function escapeHtml(str) {
 // ============================================================================
 // MOBILE SIDEBAR TOGGLE
 // ============================================================================
+// Abre/fecha a gaveta lateral (drawer) em mobile/tablet
 function toggleSidebar() {
   const sidebar = document.querySelector('.sidebar');
   const overlay = document.getElementById('sidebarOverlay');
+  if (!sidebar) return;
   sidebar.classList.toggle('open');
-  overlay.classList.toggle('active');
-  
-  // Close sidebar when navigating (for mobile/tablet)
-  setTimeout(() => {
-    sidebar.classList.remove('open');
-    overlay.classList.remove('active');
-  }, 300); // Reduzido para 300ms para fechar mais rápido ao clicar
+  if (overlay) overlay.classList.toggle('active');
 }
 
-// Fechar sidebar ao clicar fora (Mobile/Tablet drawer)
+// Recolhe a sidebar no desktop (modo ícones)
+function toggleDesktopSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  if (!sidebar) return;
+  sidebar.classList.toggle('collapsed');
+}
+
+// Fecha/recolhe a sidebar ao clicar fora dela
 document.addEventListener('click', function(e) {
   const sidebar = document.querySelector('.sidebar');
   const overlay = document.getElementById('sidebarOverlay');
   const toggleBtn = document.querySelector('.menu-toggle-btn');
-  
-  if (sidebar && sidebar.classList.contains('open')) {
-    // Se o clique foi fora da sidebar E fora do botão de abrir o menu (hamburger)
-    if (!sidebar.contains(e.target) && (!toggleBtn || !toggleBtn.contains(e.target))) {
+  const brandTitle = document.querySelector('.brand-title');
+  if (!sidebar) return;
+
+  // Elementos que NÃO devem disparar o fechamento (botões de abrir/fechar)
+  const clickedToggle = (toggleBtn && toggleBtn.contains(e.target)) || (brandTitle && brandTitle.contains(e.target));
+  const clickedInsideSidebar = sidebar.contains(e.target);
+
+  // Cliques dentro de modais ou menus de contexto não devem fechar a gaveta
+  const clickedInOverlayUI = e.target.closest('.modal-backdrop') || e.target.closest('.nova-menu');
+
+  if (sidebar.classList.contains('open')) {
+    // Mobile/tablet: fecha a gaveta
+    if (!clickedInsideSidebar && !clickedToggle) {
       sidebar.classList.remove('open');
       if (overlay) overlay.classList.remove('active');
+    }
+  } else if (window.innerWidth > 768 && !sidebar.classList.contains('collapsed')) {
+    // Desktop: recolhe a sidebar quando clica fora (na área de conteúdo)
+    if (!clickedInsideSidebar && !clickedToggle && !clickedInOverlayUI) {
+      sidebar.classList.add('collapsed');
     }
   }
 });
 
-// Auto-show menu toggle button on tablet/mobile via CSS
-// The button is hidden by default and shown via media queries
-document.addEventListener('DOMContentLoaded', function() {
-  // We don't have DOMContentLoaded since we use inline scripts,
-  // so we check window width on load
+// Mostra/esconde o botão hamburger conforme o tamanho da tela
+function refreshMenuToggleVisibility() {
   const menuBtn = document.querySelector('.menu-toggle-btn');
-  if (window.innerWidth <= 768) {
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (!menuBtn || !sidebar) return;
+
+  if (window.innerWidth > 480 && window.innerWidth <= 768) {
     menuBtn.style.display = 'inline-flex';
+  } else {
+    menuBtn.style.display = 'none';
+    sidebar.classList.remove('open');
+    if (overlay) overlay.classList.remove('active');
   }
-  window.addEventListener('resize', function() {
-    if (window.innerWidth <= 768) {
-      menuBtn.style.display = 'inline-flex';
-    } else {
-      menuBtn.style.display = 'none';
-      document.querySelector('.sidebar').classList.remove('open');
-      document.getElementById('sidebarOverlay').classList.remove('active');
-    }
-  });
-});
+}
+
+refreshMenuToggleVisibility();
+window.addEventListener('resize', refreshMenuToggleVisibility);
+window.addEventListener('load', refreshMenuToggleVisibility);
 
 
 // ============================================================================
