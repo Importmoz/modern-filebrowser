@@ -962,22 +962,16 @@ body {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: var(--bounce);
+  transition: background 0.12s ease, border-color 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease;
   position: relative;
   text-align: center;
-  animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards;
-}
-
-@keyframes popIn {
-  from { opacity: 0; transform: scale(0.9) translateY(10px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .grid-card:hover {
   background: var(--bg-card-hover);
   border-color: var(--border);
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: var(--shadow-float);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
 }
 .grid-card.selected {
   background: var(--accent-soft);
@@ -992,10 +986,10 @@ body {
   justify-content: center;
   margin-bottom: 10px;
   border-radius: var(--radius-sm);
-  transition: var(--bounce);
+  transition: transform 0.12s ease;
 }
 .grid-card:hover .icon-wrapper {
-  transform: scale(1.1);
+  transform: scale(1.06);
 }
 
 .grid-card .icon-wrapper.folder { color: #3b82f6; }
@@ -1048,21 +1042,14 @@ body {
   padding: 12px 20px;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: var(--bounce);
+  transition: background 0.12s ease, border-color 0.12s ease;
   background: var(--bg-card);
   border: 1px solid transparent;
-  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) backwards;
-}
-
-@keyframes slideIn {
-  from { opacity: 0; transform: translateX(-10px); }
-  to { opacity: 1; transform: translateX(0); }
 }
 
 .list-row:hover {
   background: var(--bg-card-hover);
   border-color: var(--border-subtle);
-  transform: translateX(4px);
 }
 .list-row.selected {
   background: var(--accent-soft);
@@ -1962,7 +1949,13 @@ async function loadFiles(path) {
   });
 
   const container = document.getElementById('fileContainer');
-  container.innerHTML = '<div class="empty-view"><p>Carregando...</p></div>';
+  const hasExistingContent = container.querySelector('.file-grid, .file-list');
+  if (!hasExistingContent) {
+    container.innerHTML = '<div class="empty-view"><p style="color:var(--text-tertiary)">Carregando...</p></div>';
+  } else {
+    container.style.opacity = '0.6';
+    container.style.pointerEvents = 'none';
+  }
 
   try {
     const params = new URLSearchParams({ path });
@@ -1972,7 +1965,10 @@ async function loadFiles(path) {
     applySortAndRender();
     renderBreadcrumbs(data.breadcrumbs);
   } catch (e) {
-    container.innerHTML = `<div class="empty-view"><h3 style="color:var(--system-red)">Erro</h4><p>${e.message}</p></div>`;
+    container.innerHTML = `<div class="empty-view"><h3 style="color:var(--system-red)">Erro</h3><p>${e.message}</p></div>`;
+  } finally {
+    container.style.opacity = '1';
+    container.style.pointerEvents = '';
   }
 }
 
@@ -2059,17 +2055,17 @@ function renderViewport(data) {
   }
 
   if (state.viewMode === 'grid') {
-    container.innerHTML = searchBannerHtml + `<div class="file-grid">${items.map((item, i) => `
+    container.innerHTML = searchBannerHtml + `<div class="file-grid">${items.map(item => `
       <div class="grid-card ${state.selected.has(item.path) ? 'selected' : ''}"
-           style="animation-delay: ${i * 0.02}s"
-           onclick="selectItem('${item.path}', event)"
-           ondblclick="${item.is_dir ? `navigateTo('${item.path}')` : `openPreview('${item.path}')`}"
-           oncontextmenu="openContextMenu(event, '${item.path}')">
+           data-path="${escapeHtml(item.path)}"
+           onclick="handleItemClick('${escapeHtml(item.path)}', ${item.is_dir ? 'true' : 'false'}, event)"
+           ondblclick="${item.is_dir ? `navigateTo('${escapeHtml(item.path)}')` : `openPreview('${escapeHtml(item.path)}')`}"
+           oncontextmenu="openContextMenu(event, '${escapeHtml(item.path)}')">
         <div class="icon-wrapper ${item.icon}">
           ${getIconSvg(item)}
         </div>
-        <div class="title" title="${item.name}">${item.name}</div>
-        ${(isSearch && item.directory) ? `<div class="search-dir-badge" title="${item.directory}">📁 ${item.directory}</div>` : ''}
+        <div class="title" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</div>
+        ${(isSearch && item.directory) ? `<div class="search-dir-badge" title="${escapeHtml(item.directory)}">📁 ${escapeHtml(item.directory)}</div>` : ''}
         <div class="meta">${item.is_dir ? (item.size_formatted || (state.calcFolderSizes ? 'Calculando...' : 'Pasta')) : item.size_formatted}</div>
       </div>
     `).join('')}</div>`;
@@ -2082,17 +2078,17 @@ function renderViewport(data) {
           <div class="sortable-col" onclick="sortItems('modified')">Modificado <span class="sort-indicator">${state.sortBy === 'modified' ? (state.sortAsc ? '▲' : '▼') : ''}</span></div>
           <div></div>
         </div>
-        ${items.map((item, i) => `
+        ${items.map(item => `
           <div class="list-row ${state.selected.has(item.path) ? 'selected' : ''}"
-               style="animation-delay: ${i * 0.015}s"
-               onclick="selectItem('${item.path}', event)"
-               ondblclick="${item.is_dir ? `navigateTo('${item.path}')` : `openPreview('${item.path}')`}"
-               oncontextmenu="openContextMenu(event, '${item.path}')">
+               data-path="${escapeHtml(item.path)}"
+               onclick="handleItemClick('${escapeHtml(item.path)}', ${item.is_dir ? 'true' : 'false'}, event)"
+               ondblclick="${item.is_dir ? `navigateTo('${escapeHtml(item.path)}')` : `openPreview('${escapeHtml(item.path)}')`}"
+               oncontextmenu="openContextMenu(event, '${escapeHtml(item.path)}')">
             <div class="name-col">
               <span class="icon-wrapper ${item.icon}">${getIconSvg(item)}</span>
               <div style="display:flex;flex-direction:column;min-width:0;overflow:hidden">
-                <span class="name-text" title="${item.name}">${item.name}</span>
-                ${(isSearch && item.directory) ? `<span class="search-dir-badge" title="${item.directory}">📁 ${item.directory}</span>` : ''}
+                <span class="name-text" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</span>
+                ${(isSearch && item.directory) ? `<span class="search-dir-badge" title="${escapeHtml(item.directory)}">📁 ${escapeHtml(item.directory)}</span>` : ''}
               </div>
             </div>
             <div class="size-col">${item.is_dir ? (item.size_formatted || (state.calcFolderSizes ? 'Calculando...' : '—')) : item.size_formatted}</div>
@@ -2198,15 +2194,49 @@ function formatDate(iso) {
 // ============================================================================
 // ACTIONS
 // ============================================================================
+function updateSelectionUi() {
+  document.querySelectorAll('.grid-card, .list-row').forEach(el => {
+    const p = el.getAttribute('data-path');
+    if (p) {
+      el.classList.toggle('selected', state.selected.has(p));
+    }
+  });
+}
+
+function handleItemClick(path, isDir, evt) {
+  // Se estiver com tecla modificadora (Ctrl ou Cmd), alterna seleção
+  if (evt && (evt.ctrlKey || evt.metaKey)) {
+    if (state.selected.has(path)) {
+      state.selected.delete(path);
+    } else {
+      state.selected.add(path);
+    }
+    updateSelectionUi();
+    return;
+  }
+
+  // CLIQUE ÚNICO EM PASTA: ENTRA IMEDIATAMENTE NO DIRETÓRIO (sem delay nem animação)
+  if (isDir) {
+    state.selected.clear();
+    navigateTo(path);
+    return;
+  }
+
+  // CLIQUE ÚNICO EM ARQUIVO: seleciona o arquivo instantaneamente
+  state.selected.clear();
+  state.selected.add(path);
+  updateSelectionUi();
+}
+
 function selectItem(path, evt) {
-  if (evt.ctrlKey || evt.metaKey) {
+  if (evt && (evt.ctrlKey || evt.metaKey)) {
     if (state.selected.has(path)) state.selected.delete(path);
     else state.selected.add(path);
   } else {
     state.selected.clear();
     state.selected.add(path);
   }
-  renderViewport({ items: state.items });
+  updateSelectionUi();
 }
 
 function setView(mode) {
@@ -2309,7 +2339,7 @@ function openContextMenu(e, path) {
   if (!state.selected.has(path)) {
     state.selected.clear();
     state.selected.add(path);
-    renderViewport({ items: state.items });
+    updateSelectionUi();
   }
   
   const menu = document.getElementById('novaMenu');

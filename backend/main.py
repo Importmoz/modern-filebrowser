@@ -43,6 +43,7 @@ import jwt
 # =============================================================================
 
 ROOT_PATH = os.environ.get("ROOT_PATH", "/data")
+ROOT_PATH_RESOLVED = Path(ROOT_PATH).resolve()
 JWT_SECRET = os.environ.get("JWT_SECRET", "change-me-to-a-secure-random-string")
 JWT_ALGO = "HS256"
 JWT_EXPIRATION_HOURS = 24
@@ -202,10 +203,9 @@ def sanitize_path(path: str) -> str:
 def get_full_path(user_path: str) -> Path:
     """Resolve o caminho absoluto seguro."""
     safe = sanitize_path(user_path)
-    full = Path(ROOT_PATH) / safe
-    full = full.resolve()
+    full = (ROOT_PATH_RESOLVED / safe).resolve()
     # Garante que está dentro de ROOT_PATH
-    if not str(full).startswith(str(Path(ROOT_PATH).resolve())):
+    if not str(full).startswith(str(ROOT_PATH_RESOLVED)):
         raise HTTPException(403, "Acesso negado")
     return full
 
@@ -250,8 +250,7 @@ def get_file_icon(filename: str, is_dir: bool = False) -> str:
 def to_relative_path(p: Path) -> str:
     """Retorna caminho relativo normalizado ao ROOT_PATH com barra inicial."""
     try:
-        root_resolved = Path(ROOT_PATH).resolve()
-        rel = str(p.resolve().relative_to(root_resolved)).replace("\\", "/")
+        rel = str(p.resolve().relative_to(ROOT_PATH_RESOLVED)).replace("\\", "/")
         return "/" + rel if rel != "." else "/"
     except Exception:
         name = p.name if hasattr(p, 'name') else str(p)
@@ -619,6 +618,15 @@ async def get_me(current_user: dict = Depends(get_current_user)):
     }
 
 # =============================================================================
+# Rotas de Saúde / Health Check (Docker / VPS)
+# =============================================================================
+
+@app.get("/api/health")
+async def health_check():
+    """Endpoint de verificação de integridade (Health Check) para Docker e VPS."""
+    return {"status": "ok", "service": "novadrive"}
+
+# =============================================================================
 # Rotas de Arquivos
 # =============================================================================
 
@@ -630,7 +638,7 @@ async def list_files(
     current_user: dict = Depends(get_current_user),
     x_secure_code: Optional[str] = Header(None)
 ):
-    """Lista arquivos e pastas em um diretório."""
+    """Lista arquivos e pastas em um diretório com máxima performance usando os.scandir."""
     check_security(path, x_secure_code)
     full_path = get_full_path(path)
     
@@ -639,76 +647,90 @@ async def list_files(
     if not full_path.is_dir():
         raise HTTPException(400, "Caminho não é um diretório")
     
-    items = []
+    folders = []
+    files = []
+    
+    clean_path = sanitize_path(path).strip("/")
+    base_rel_prefix = f"/{clean_path}" if clean_path else ""
+    search_str = search.strip().lower() if isinstance(search, str) and search.strip() else None
+    now = time.time()
     
     try:
-        raw_entries = list(full_path.iterdir())
-        entries = sorted(raw_entries, key=lambda x: (not (x.is_dir() if hasattr(x, 'is_dir') else False), x.name.lower()))
+        with os.scandir(full_path) as it:
+            for entry in it:
+                name = entry.name
+                if name.startswith(".") and name not in [".", ".."]:
+                    continue
+                if name in ('.trash', '.git', '.venv', '__pycache__', '.run-data'):
+                    continue
+
+                if search_str and search_str not in name.lower():
+                    continue
+
+                try:
+                    is_dir = entry.is_dir(follow_symlinks=False)
+                except OSError:
+                    is_dir = False
+
+                stat_size = 0
+                stat_mtime = 0
+                try:
+                    st = entry.stat(follow_symlinks=False)
+                    stat_size = st.st_size
+                    stat_mtime = st.st_mtime
+                except OSError:
+                    pass
+
+                rel_path = f"{base_rel_prefix}/{name}" if base_rel_prefix else f"/{name}"
+
+                if is_dir:
+                    dir_size = 0
+                    dir_size_formatted = ""
+                    entry_path_str = entry.path
+                    if calc_folder_sizes:
+                        dir_size, _, _ = calculate_dir_size(Path(entry.path))
+                        dir_size_formatted = format_size(dir_size)
+                    elif entry_path_str in FOLDER_SIZE_CACHE and (now - FOLDER_SIZE_CACHE[entry_path_str][0] < CACHE_TTL):
+                        dir_size = FOLDER_SIZE_CACHE[entry_path_str][1]
+                        dir_size_formatted = format_size(dir_size)
+                    
+                    folders.append({
+                        "name": name,
+                        "path": rel_path,
+                        "is_dir": True,
+                        "size": dir_size,
+                        "size_formatted": dir_size_formatted,
+                        "modified": datetime.datetime.fromtimestamp(stat_mtime).isoformat() if stat_mtime else "",
+                        "icon": "folder",
+                        "extension": "",
+                    })
+                else:
+                    files.append({
+                        "name": name,
+                        "path": rel_path,
+                        "is_dir": False,
+                        "size": stat_size,
+                        "size_formatted": format_size(stat_size),
+                        "modified": datetime.datetime.fromtimestamp(stat_mtime).isoformat() if stat_mtime else "",
+                        "icon": get_file_icon(name, False),
+                        "extension": Path(name).suffix.lower(),
+                    })
     except PermissionError:
         raise HTTPException(403, "Permissão negada ao ler diretório")
     except Exception as e:
         raise HTTPException(500, f"Erro ao acessar diretório: {str(e)}")
-    
-    for entry in entries:
-        try:
-            # Pula arquivos ocultos de sistema (.trash etc.)
-            if entry.name.startswith(".") and entry.name not in [".", ".."]:
-                continue
-            
-            is_dir = False
-            try:
-                is_dir = entry.is_dir()
-            except Exception:
-                pass
-            
-            stat_size = 0
-            stat_mtime = 0
-            try:
-                stat = entry.stat()
-                stat_size = stat.st_size
-                stat_mtime = stat.st_mtime
-            except Exception:
-                pass
-            
-            # Filtro de busca (opcional)
-            search_str = search if isinstance(search, str) and search.strip() else None
-            if search_str and search_str.lower() not in entry.name.lower():
-                continue
-            
-            rel_path = to_relative_path(entry)
-            
-            dir_size = 0
-            dir_size_formatted = ""
-            if is_dir:
-                path_str = str(entry.resolve()) if hasattr(entry, 'resolve') else str(entry)
-                now = time.time()
-                if calc_folder_sizes:
-                    dir_size, _, _ = calculate_dir_size(entry)
-                    dir_size_formatted = format_size(dir_size)
-                elif path_str in FOLDER_SIZE_CACHE and (now - FOLDER_SIZE_CACHE[path_str][0] < CACHE_TTL):
-                    dir_size = FOLDER_SIZE_CACHE[path_str][1]
-                    dir_size_formatted = format_size(dir_size)
-            
-            items.append({
-                "name": entry.name,
-                "path": rel_path,
-                "is_dir": is_dir,
-                "size": stat_size if not is_dir else dir_size,
-                "size_formatted": format_size(stat_size) if not is_dir else dir_size_formatted,
-                "modified": datetime.datetime.fromtimestamp(stat_mtime).isoformat() if stat_mtime else "",
-                "icon": get_file_icon(entry.name, is_dir),
-                "extension": Path(entry.name).suffix.lower() if not is_dir else "",
-            })
-        except Exception:
-            continue
-    
+
+    folders.sort(key=lambda x: x["name"].lower())
+    files.sort(key=lambda x: x["name"].lower())
+    items = folders + files
+
     # Informações do diretório atual
     breadcrumbs = []
-    rel_path = Path(sanitize_path(path))
-    parts = rel_path.parts
+    rel_path_obj = Path(clean_path)
+    parts = rel_path_obj.parts
     
     current_build_path = ""
-    for i, part in enumerate(parts):
+    for part in parts:
         if part:
             current_build_path += "/" + part
             breadcrumbs.append({
