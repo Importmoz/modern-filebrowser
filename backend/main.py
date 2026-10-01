@@ -227,20 +227,35 @@ def get_file_icon(filename: str, is_dir: bool = False) -> str:
         return "folder"
     ext = Path(filename).suffix.lower()
     icons = {
+        # Imagens
         ".jpg": "image", ".jpeg": "image", ".png": "image", ".gif": "image",
-        ".svg": "image", ".webp": "image", ".ico": "image",
+        ".svg": "image", ".webp": "image", ".ico": "image", ".bmp": "image",
+        ".tiff": "image", ".tif": "image", ".avif": "image",
+        # Vídeos
         ".mp4": "video", ".avi": "video", ".mkv": "video", ".mov": "video",
-        ".webm": "video",
+        ".webm": "video", ".m4v": "video", ".ogv": "video", ".3gp": "video",
+        ".wmv": "video", ".flv": "video",
+        # Áudio / Música
         ".mp3": "audio", ".wav": "audio", ".flac": "audio", ".ogg": "audio",
+        ".m4a": "audio", ".aac": "audio", ".opus": "audio", ".wma": "audio",
+        ".mid": "audio", ".midi": "audio",
+        # Documentos Office e PDF
         ".pdf": "pdf",
-        ".doc": "document", ".docx": "document", ".odt": "document",
-        ".xls": "spreadsheet", ".xlsx": "spreadsheet", ".csv": "spreadsheet",
+        ".doc": "document", ".docx": "document", ".odt": "document", ".rtf": "document",
+        ".xls": "spreadsheet", ".xlsx": "spreadsheet", ".csv": "spreadsheet", ".ods": "spreadsheet",
+        ".ppt": "presentation", ".pptx": "presentation", ".odp": "presentation",
+        # Arquivos compactados
         ".zip": "archive", ".rar": "archive", ".7z": "archive", ".tar": "archive",
-        ".gz": "archive", ".bz2": "archive",
+        ".gz": "archive", ".bz2": "archive", ".xz": "archive",
+        # Código
         ".py": "code", ".js": "code", ".ts": "code", ".html": "code",
         ".css": "code", ".json": "code", ".xml": "code", ".yaml": "code",
         ".yml": "code", ".sh": "code", ".bat": "code", ".sql": "code",
-        ".txt": "text", ".md": "text", ".log": "text",
+        ".php": "code", ".java": "code", ".c": "code", ".cpp": "code",
+        ".cs": "code", ".go": "code", ".rs": "code", ".rb": "code",
+        # Texto
+        ".txt": "text", ".md": "text", ".log": "text", ".ini": "text", ".conf": "text",
+        # Binários e outros
         ".exe": "binary", ".dll": "binary", ".so": "binary",
         ".iso": "disc", ".img": "disc",
         ".torrent": "download",
@@ -1007,6 +1022,72 @@ async def download_file(
             }
         )
 
+@app.get("/api/files/raw")
+async def raw_file(
+    path: str = Query(...),
+    current_user: dict = Depends(get_current_user),
+    x_secure_code: Optional[str] = Query(None)
+):
+    """Visualização e streaming inline de arquivos de mídia (áudio, vídeo, imagem, pdf)."""
+    check_security(path, x_secure_code)
+    full_path = get_full_path(path)
+    
+    if not full_path.exists() or not full_path.is_file():
+        raise HTTPException(404, "Arquivo não encontrado")
+    
+    ext = full_path.suffix.lower()
+    custom_mimes = {
+        # Vídeos
+        ".mp4": "video/mp4",
+        ".webm": "video/webm",
+        ".mkv": "video/webm",
+        ".mov": "video/quicktime",
+        ".avi": "video/x-msvideo",
+        ".m4v": "video/mp4",
+        ".ogv": "video/ogg",
+        # Áudios
+        ".mp3": "audio/mpeg",
+        ".wav": "audio/wav",
+        ".ogg": "audio/ogg",
+        ".flac": "audio/flac",
+        ".m4a": "audio/mp4",
+        ".aac": "audio/aac",
+        ".opus": "audio/ogg",
+        ".wma": "audio/x-ms-wma",
+        # Imagens
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".png": "image/png",
+        ".gif": "image/gif",
+        ".webp": "image/webp",
+        ".svg": "image/svg+xml",
+        ".bmp": "image/bmp",
+        ".ico": "image/x-icon",
+        ".tiff": "image/tiff",
+        ".tif": "image/tiff",
+        ".avif": "image/avif",
+        # Documentos
+        ".pdf": "application/pdf",
+        ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        ".doc": "application/msword",
+        ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        ".xls": "application/vnd.ms-excel",
+        ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        ".ppt": "application/vnd.ms-powerpoint",
+        ".csv": "text/csv; charset=utf-8",
+        ".txt": "text/plain; charset=utf-8",
+        ".json": "application/json; charset=utf-8"
+    }
+    mime_type, _ = mimetypes.guess_type(str(full_path))
+    media_type = custom_mimes.get(ext) or mime_type or "application/octet-stream"
+    
+    return FileResponse(
+        path=str(full_path),
+        filename=full_path.name,
+        media_type=media_type,
+        content_disposition_type="inline"
+    )
+
 @app.post("/api/files/copy")
 async def copy_file(
     path: str = Form(...),
@@ -1195,25 +1276,101 @@ async def preview_file(
     current_user: dict = Depends(get_current_user),
     x_secure_code: Optional[str] = Query(None)
 ):
-    """Retorna conteúdo de arquivo de texto para preview."""
+    """Retorna conteúdo de arquivo de texto ou documento de office para preview."""
     check_security(path, x_secure_code)
     full_path = get_full_path(path)
     
     if not full_path.exists() or not full_path.is_file():
         raise HTTPException(404, "Arquivo não encontrado")
     
+    ext = full_path.suffix.lower()
+
+    # 1. Documento Word (.docx)
+    if ext == ".docx":
+        try:
+            import xml.etree.ElementTree as ET
+            with zipfile.ZipFile(full_path, "r") as z:
+                xml_content = z.read("word/document.xml")
+                tree = ET.fromstring(xml_content)
+                paragraphs = []
+                w_ns = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+                for p in tree.iter(f"{{{w_ns}}}p"):
+                    texts = [node.text for node in p.iter(f"{{{w_ns}}}t") if node.text]
+                    if texts:
+                        paragraphs.append("".join(texts))
+                return {
+                    "type": "docx",
+                    "name": full_path.name,
+                    "paragraphs": paragraphs,
+                    "content": "\n\n".join(paragraphs),
+                    "is_office": True
+                }
+        except Exception:
+            pass
+
+    # 2. Apresentação PowerPoint (.pptx)
+    if ext == ".pptx":
+        try:
+            import xml.etree.ElementTree as ET
+            with zipfile.ZipFile(full_path, "r") as z:
+                slides = []
+                slide_names = sorted([f for f in z.namelist() if f.startswith("ppt/slides/slide") and f.endswith(".xml")])
+                for s_name in slide_names:
+                    xml_content = z.read(s_name)
+                    tree = ET.fromstring(xml_content)
+                    slide_texts = []
+                    for node in tree.iter():
+                        if node.tag.endswith("}t") and node.text:
+                            slide_texts.append(node.text)
+                    if slide_texts:
+                        slides.append(" ".join(slide_texts))
+                return {
+                    "type": "pptx",
+                    "name": full_path.name,
+                    "slides": slides,
+                    "content": "\n\n--- Slide ---\n\n".join(slides),
+                    "is_office": True
+                }
+        except Exception:
+            pass
+
+    # 3. Planilha CSV (.csv)
+    if ext == ".csv":
+        try:
+            import csv
+            with open(full_path, "r", encoding="utf-8", errors="replace") as f:
+                reader = list(csv.reader(f))
+                headers = reader[0] if reader else []
+                rows = reader[1:300] if len(reader) > 1 else []
+                return {
+                    "type": "csv",
+                    "name": full_path.name,
+                    "headers": headers,
+                    "rows": rows,
+                    "total_rows": len(reader),
+                    "is_office": True
+                }
+        except Exception:
+            pass
+
+    # 4. Arquivos de texto e código normais
     try:
-        # Tenta verificar se é um arquivo binário checando nulos iniciais
         with open(full_path, 'rb') as f:
             chunk = f.read(4096)
             if b'\0' in chunk:
-                raise HTTPException(400, "Arquivo binário")
+                return {
+                    "type": "binary",
+                    "name": full_path.name,
+                    "is_binary": True
+                }
                 
         content = full_path.read_text(encoding="utf-8", errors="replace")
-        ext = full_path.suffix.lower()
-        return {"content": content, "name": full_path.name, "language": ext.lstrip(".") or "text"}
-    except HTTPException:
-        raise
+        return {
+            "type": "text",
+            "content": content,
+            "name": full_path.name,
+            "language": ext.lstrip(".") or "text"
+        }
     except Exception as e:
         raise HTTPException(500, f"Erro ao ler arquivo: {str(e)}")
 

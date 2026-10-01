@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NovaDrive</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.3/p5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -1328,6 +1330,358 @@ body {
 }
 
 /* ============================================================================
+   MEDIA & OFFICE DOCUMENT PREVIEWERS
+   ============================================================================ */
+.nova-modal.modal-lg { width: 850px; max-width: 95vw; }
+.nova-modal.modal-xl { width: 1100px; max-width: 96vw; max-height: 92vh; }
+.nova-modal.modal-full { width: 96vw; max-width: 1400px; max-height: 94vh; }
+
+/* Office Document Paper Sheet */
+.office-sheet-wrapper {
+  background: #14151b;
+  padding: 24px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  justify-content: center;
+  overflow-y: auto;
+  max-height: 68vh;
+  border: 1px solid var(--border-subtle);
+}
+.office-doc-sheet {
+  background: #ffffff;
+  color: #1f2937;
+  padding: 44px 52px;
+  width: 100%;
+  max-width: 820px;
+  min-height: 550px;
+  border-radius: 4px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+}
+.office-doc-sheet h1, .office-doc-sheet h2, .office-doc-sheet h3 {
+  color: #111827;
+  margin-top: 20px;
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+.office-doc-sheet p {
+  margin-bottom: 14px;
+}
+.office-doc-sheet table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0;
+  font-size: 14px;
+}
+.office-doc-sheet table th, .office-doc-sheet table td {
+  border: 1px solid #d1d5db;
+  padding: 8px 12px;
+  text-align: left;
+}
+.office-doc-sheet table th {
+  background: #f3f4f6;
+  font-weight: 700;
+}
+.office-doc-sheet img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin: 12px 0;
+}
+
+/* Spreadsheet (Excel / CSV) */
+.spreadsheet-container {
+  display: flex;
+  flex-direction: column;
+  height: 65vh;
+  background: #0d0e12;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.spreadsheet-toolbar {
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+}
+.spreadsheet-search {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 6px 14px;
+  color: var(--text-primary);
+  font-size: 12px;
+  outline: none;
+  width: 220px;
+}
+.spreadsheet-search:focus {
+  border-color: var(--accent);
+}
+.spreadsheet-table-box {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+}
+.spreadsheet-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: #e2e8f0;
+}
+.spreadsheet-table th, .spreadsheet-table td {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 8px 12px;
+  white-space: nowrap;
+}
+.spreadsheet-table th {
+  background: #161822;
+  color: var(--text-secondary);
+  font-weight: 700;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.spreadsheet-table td.row-num {
+  background: #12141c;
+  color: var(--text-tertiary);
+  text-align: center;
+  user-select: none;
+  font-weight: 600;
+  width: 44px;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+}
+.spreadsheet-table tr:hover td {
+  background: rgba(139, 92, 246, 0.08);
+}
+.spreadsheet-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 6px 12px;
+  background: #090a0d;
+  border-top: 1px solid var(--border);
+  overflow-x: auto;
+}
+.sheet-tab-btn {
+  padding: 6px 14px;
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.sheet-tab-btn.active {
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+  border-color: var(--accent);
+}
+
+/* Presentation Slides (PPTX) */
+.slides-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 10px 0;
+}
+.slide-card {
+  width: 100%;
+  max-width: 720px;
+  min-height: 380px;
+  background: linear-gradient(145deg, #181924, #0f1017);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 36px 44px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+.slide-card h2 {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 12px;
+}
+.slide-card .slide-body {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  max-height: 260px;
+  overflow-y: auto;
+}
+.slide-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Music Player (Vinyl Disc) */
+.music-player-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 12px;
+}
+.vinyl-disc-box {
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #2a2a35 25%, #111116 26%, #111116 35%, #2a2a35 36%, #111116 48%, #111116 60%, #1e1e28 61%, #0b0c10 70%);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.6), 0 0 30px var(--accent-glow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 24px;
+  border: 4px solid #1a1a24;
+  transition: transform 0.3s ease;
+}
+.vinyl-disc-box.playing {
+  animation: vinylSpin 6s linear infinite;
+}
+@keyframes vinylSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.vinyl-center-badge {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 0 12px rgba(0,0,0,0.6);
+}
+.music-meta {
+  text-align: center;
+  margin-bottom: 20px;
+  width: 100%;
+}
+.music-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.music-sub {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+.music-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+/* Video Player Box */
+.video-player-box {
+  background: #000000;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+.video-controls-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+}
+.video-speed-pill {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+.video-speed-pill.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* Gallery Toolbar */
+.gallery-controls-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(0,0,0,0.4);
+  border-radius: var(--radius-full);
+  margin-bottom: 12px;
+  border: 1px solid var(--border-subtle);
+}
+.gallery-tool-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  color: var(--text-primary);
+  font-size: 12px;
+  padding: 4px 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.gallery-tool-btn:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent);
+}
+
+/* Quick Row Action Buttons */
+.btn-row-action {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: var(--transition);
+}
+.btn-row-action:hover {
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+  border-color: var(--accent);
+}
+
+/* ============================================================================
    RESPONSIVE DESIGN — 3 BREAKPOINTS (Mobile / Tablet / Small Desktop)
    ============================================================================ */
 
@@ -1786,11 +2140,20 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'F2' && state.selected.size === 1) {
     promptRename(Array.from(state.selected)[0]);
   }
+  if ((e.key === ' ' || e.key === 'Enter') && state.selected.size === 1) {
+    const selectedPath = Array.from(state.selected)[0];
+    const item = state.items.find(i => i.path === selectedPath);
+    if (item && !item.is_dir) {
+      e.preventDefault();
+      openPreview(selectedPath);
+      return;
+    }
+  }
   if (e.key === 'a' && (e.ctrlKey || e.metaKey)) {
     e.preventDefault();
     state.selected.clear();
     state.items.forEach(i => state.selected.add(i.path));
-    renderViewport({ items: state.items });
+    updateSelectionUi();
   }
 });
 
@@ -2093,7 +2456,9 @@ function renderViewport(data) {
             </div>
             <div class="size-col">${item.is_dir ? (item.size_formatted || (state.calcFolderSizes ? 'Calculando...' : '—')) : item.size_formatted}</div>
             <div class="date-col">${formatDate(item.modified)}</div>
-            <div></div>
+            <div style="display:flex;justify-content:center;align-items:center">
+              ${!item.is_dir ? `<button type="button" class="btn-row-action" onclick="event.stopPropagation();openPreview('${escapeHtml(item.path)}')" title="Visualizar (Espaço ou Enter)">👁️</button>` : ''}
+            </div>
           </div>
         `).join('')}
       </div>
@@ -2695,102 +3060,695 @@ async function executeDelete(path) {
   }
 }
 
-async function openPreview(path) {
-  const item = state.items.find(i => i.path === path);
+// ============================================================================
+// RICH MEDIA & OFFICE DOCUMENT PREVIEWERS
+// ============================================================================
+let currentImageZoom = 1;
+let currentImageRotation = 0;
+let currentWorkbook = null;
+let currentSheetName = '';
+let currentPresentationSlides = [];
+let currentSlideIndex = 0;
+
+function printElement(elId) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const printWin = window.open('', '_blank');
+  printWin.document.write(`<html><head><title>Imprimir Documento</title><style>body{font-family:sans-serif;padding:30px;color:#111}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:8px}</style></head><body>${el.innerHTML}</body></html>`);
+  printWin.document.close();
+  printWin.focus();
+  setTimeout(() => { printWin.print(); printWin.close(); }, 350);
+}
+
+function copyElementText(elId) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const text = el.innerText || el.textContent;
+  copyToClipboard(text);
+  toast('Texto copiado para a área de transferência');
+}
+
+function zoomImage(delta) {
+  currentImageZoom = Math.max(0.2, Math.min(currentImageZoom + delta, 4));
+  applyImageTransform();
+}
+
+function resetZoomImage() {
+  currentImageZoom = 1;
+  currentImageRotation = 0;
+  applyImageTransform();
+}
+
+function rotateImage(deg) {
+  currentImageRotation = (currentImageRotation + deg) % 360;
+  applyImageTransform();
+}
+
+function applyImageTransform() {
+  const img = document.getElementById('previewImageEl');
+  if (img) {
+    img.style.transform = `scale(${currentImageZoom}) rotate(${currentImageRotation}deg)`;
+  }
+}
+
+function setVideoSpeed(speed, btn) {
+  const vid = document.getElementById('novaVideoPlayer');
+  if (vid) {
+    vid.playbackRate = speed;
+    document.querySelectorAll('.video-speed-pill').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+  }
+}
+
+function toggleVideoPip() {
+  const vid = document.getElementById('novaVideoPlayer');
+  if (vid && document.pictureInPictureEnabled) {
+    if (document.pictureInPictureElement) {
+      document.exitPictureInPicture();
+    } else {
+      vid.requestPictureInPicture().catch(() => {});
+    }
+  }
+}
+
+function toggleVideoFullscreen() {
+  const box = document.querySelector('.video-player-box');
+  if (!box) return;
+  if (!document.fullscreenElement) {
+    box.requestFullscreen().catch(() => {});
+  } else {
+    document.exitFullscreen().catch(() => {});
+  }
+}
+
+function prevGalleryImage() {
+  if (state.currentGalleryIndex > 0) {
+    state.currentGalleryIndex--;
+    renderGalleryModal();
+  }
+}
+
+function nextGalleryImage() {
+  if (state.currentGalleryIndex < state.galleryImages.length - 1) {
+    state.currentGalleryIndex++;
+    renderGalleryModal();
+  }
+}
+
+function renderGalleryModal() {
+  const item = state.galleryImages[state.currentGalleryIndex];
   if (!item) return;
+  const rawUrl = `${API}/files/raw?path=${encodeURIComponent(item.path)}&token=${state.token}`;
+  const downloadUrl = `${API}/files/download?path=${encodeURIComponent(item.path)}&token=${state.token}`;
 
-  const url = `${API}/files/download?path=${encodeURIComponent(path)}&token=${state.token}`;
+  const isFirst = state.currentGalleryIndex === 0;
+  const isLast = state.currentGalleryIndex === state.galleryImages.length - 1;
+  currentImageZoom = 1;
+  currentImageRotation = 0;
 
-  if (item.icon === 'image') {
-    state.galleryImages = state.items.filter(i => i.icon === 'image');
+  showModal(`
+    <div class="modal-header" style="display:flex;align-items:center;justify-content:space-between">
+      <div style="min-width:0;overflow:hidden">
+        <h3 style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(item.name)}</h3>
+        <p style="font-size:12px;color:var(--text-secondary);margin:0">${item.size_formatted || ''} ${state.galleryImages.length > 1 ? `• Imagem ${state.currentGalleryIndex + 1} de ${state.galleryImages.length}` : ''}</p>
+      </div>
+      <button class="btn-icon-soft" onclick="closeModal()" title="Fechar">✕</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;align-items:center;background:#050608;padding:14px;min-height:55vh;overflow:hidden;position:relative">
+      
+      <div class="gallery-controls-bar">
+        <button class="gallery-tool-btn" onclick="zoomImage(0.25)" title="Aumentar Zoom">🔍+ Zoom</button>
+        <button class="gallery-tool-btn" onclick="zoomImage(-0.25)" title="Diminuir Zoom">🔍- Zoom</button>
+        <button class="gallery-tool-btn" onclick="resetZoomImage()" title="Tamanho Normal">1:1</button>
+        <button class="gallery-tool-btn" onclick="rotateImage(90)" title="Girar 90 graus">🔄 Girar</button>
+      </div>
+
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;width:100%;overflow:auto;position:relative">
+        ${state.galleryImages.length > 1 && !isFirst ? `
+          <button onclick="prevGalleryImage()" style="position:absolute;left:10px;z-index:10;background:rgba(0,0,0,0.6);border:1px solid var(--border);border-radius:50%;width:42px;height:42px;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.2s">
+            <svg class="svg-icon lg" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+        ` : ''}
+
+        <img id="previewImageEl" src="${rawUrl}" style="max-width:100%;max-height:65vh;object-fit:contain;border-radius:var(--radius-sm);box-shadow:var(--shadow-float);transition:transform 0.2s ease" alt="${escapeHtml(item.name)}">
+
+        ${state.galleryImages.length > 1 && !isLast ? `
+          <button onclick="nextGalleryImage()" style="position:absolute;right:10px;z-index:10;background:rgba(0,0,0,0.6);border:1px solid var(--border);border-radius:50%;width:42px;height:42px;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.2s">
+            <svg class="svg-icon lg" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        ` : ''}
+      </div>
+
+    </div>
+    <div class="modal-footer" style="justify-content:space-between">
+      <span style="font-size:12px;color:var(--text-tertiary)">Navegue com as setas ◀ e ▶</span>
+      <div style="display:flex;gap:10px">
+        <button class="btn-secondary" onclick="closeModal()">Fechar</button>
+        <button class="btn-primary-sm" onclick="window.open('${downloadUrl}', '_blank')">Baixar Original</button>
+      </div>
+    </div>
+  `, 'modal-lg');
+}
+
+function renderVideoModal(path, item) {
+  const rawUrl = `${API}/files/raw?path=${encodeURIComponent(path)}&token=${state.token}`;
+  const downloadUrl = `${API}/files/download?path=${encodeURIComponent(path)}&token=${state.token}`;
+
+  showModal(`
+    <div class="modal-header" style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <h3>${escapeHtml(item.name)}</h3>
+        <p style="font-size:12px;color:var(--text-secondary);margin:0">${item.size_formatted || ''} • Vídeo</p>
+      </div>
+      <button class="btn-icon-soft" onclick="closeModal()" title="Fechar">✕</button>
+    </div>
+    <div class="modal-body" style="padding:16px 24px;background:#050508">
+      <div class="video-player-box">
+        <video id="novaVideoPlayer" controls autoplay playsinline style="width:100%;max-height:65vh;outline:none;border-radius:var(--radius-sm)">
+          <source src="${rawUrl}">
+          Seu navegador não suporta este formato de vídeo diretamente.
+        </video>
+      </div>
+      <div class="video-controls-bar">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:11px;color:var(--text-tertiary);font-weight:700">VELOCIDADE:</span>
+          <button class="video-speed-pill" onclick="setVideoSpeed(0.5, this)">0.5x</button>
+          <button class="video-speed-pill active" onclick="setVideoSpeed(1, this)">1x</button>
+          <button class="video-speed-pill" onclick="setVideoSpeed(1.25, this)">1.25x</button>
+          <button class="video-speed-pill" onclick="setVideoSpeed(1.5, this)">1.5x</button>
+          <button class="video-speed-pill" onclick="setVideoSpeed(2, this)">2x</button>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="gallery-tool-btn" onclick="toggleVideoPip()" title="Picture in Picture">📺 Mini-Player</button>
+          <button class="gallery-tool-btn" onclick="toggleVideoFullscreen()" title="Tela Cheia">⛶ Tela Cheia</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal()">Fechar</button>
+      <button class="btn-primary-sm" onclick="window.open('${downloadUrl}', '_blank')">Baixar Vídeo</button>
+    </div>
+  `, 'modal-xl');
+}
+
+function renderAudioModal(path, item) {
+  const rawUrl = `${API}/files/raw?path=${encodeURIComponent(path)}&token=${state.token}`;
+  const downloadUrl = `${API}/files/download?path=${encodeURIComponent(path)}&token=${state.token}`;
+
+  const audioList = state.items.filter(i => i.icon === 'audio' || ['.mp3','.wav','.flac','.ogg','.m4a','.aac','.opus','.wma'].some(ext => (i.extension||'').toLowerCase() === ext));
+  const currentIndex = audioList.findIndex(i => i.path === path);
+
+  showModal(`
+    <div class="modal-header" style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <h3>Player de Música</h3>
+        <p style="font-size:12px;color:var(--text-secondary);margin:0">${item.size_formatted || ''} • Áudio de Alta Fidelidade</p>
+      </div>
+      <button class="btn-icon-soft" onclick="closeModal()" title="Fechar">✕</button>
+    </div>
+    <div class="modal-body" style="padding:24px 32px">
+      <div class="music-player-card">
+        <div class="vinyl-disc-box playing" id="vinylDisc">
+          <div class="vinyl-center-badge">
+            <svg class="svg-icon xl" viewBox="0 0 24 24" style="color:white"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+          </div>
+        </div>
+
+        <div class="music-meta">
+          <div class="music-title" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</div>
+          <div class="music-sub">🎵 ${escapeHtml(item.path)}</div>
+        </div>
+
+        <audio id="novaAudioPlayer" controls autoplay style="width:100%;max-width:440px;outline:none;margin-top:6px" onplay="document.getElementById('vinylDisc')?.classList.add('playing')" onpause="document.getElementById('vinylDisc')?.classList.remove('playing')">
+          <source src="${rawUrl}">
+          Seu navegador não suporta a reprodução deste áudio.
+        </audio>
+
+        ${audioList.length > 1 ? `
+          <div class="music-nav-bar">
+            <button class="gallery-tool-btn" ${currentIndex <= 0 ? 'disabled style="opacity:0.4"' : ''} onclick="openPreview('${audioList[currentIndex - 1]?.path}')">⏮ Anterior</button>
+            <span style="font-size:12px;color:var(--text-tertiary)">${currentIndex + 1} de ${audioList.length}</span>
+            <button class="gallery-tool-btn" ${currentIndex >= audioList.length - 1 ? 'disabled style="opacity:0.4"' : ''} onclick="openPreview('${audioList[currentIndex + 1]?.path}')">Próxima ⏭</button>
+          </div>
+        ` : ''}
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal()">Fechar</button>
+      <button class="btn-primary-sm" onclick="window.open('${downloadUrl}', '_blank')">Baixar Música</button>
+    </div>
+  `);
+}
+
+function renderPdfModal(path, item) {
+  const rawUrl = `${API}/files/raw?path=${encodeURIComponent(path)}&token=${state.token}`;
+  const downloadUrl = `${API}/files/download?path=${encodeURIComponent(path)}&token=${state.token}`;
+
+  showModal(`
+    <div class="modal-header" style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <h3 style="display:flex;align-items:center;gap:8px">
+          <span style="color:#ef4444">📑</span> ${escapeHtml(item.name)}
+        </h3>
+        <p style="font-size:12px;color:var(--text-secondary);margin:0">${item.size_formatted || ''} • Documento PDF</p>
+      </div>
+      <button class="btn-icon-soft" onclick="closeModal()" title="Fechar">✕</button>
+    </div>
+    <div class="modal-body" style="padding:0;height:72vh;background:#14151b">
+      <iframe src="${rawUrl}" style="width:100%;height:100%;border:none;border-radius:0 0 var(--radius-sm) var(--radius-sm)"></iframe>
+    </div>
+    <div class="modal-footer" style="justify-content:space-between">
+      <button class="gallery-tool-btn" onclick="window.open('${rawUrl}', '_blank')">↗ Abrir em Nova Aba</button>
+      <div style="display:flex;gap:10px">
+        <button class="btn-secondary" onclick="closeModal()">Fechar</button>
+        <button class="btn-primary-sm" onclick="window.open('${downloadUrl}', '_blank')">Baixar PDF</button>
+      </div>
+    </div>
+  `, 'modal-xl');
+}
+
+async function renderWordModal(path, item) {
+  const rawUrl = `${API}/files/raw?path=${encodeURIComponent(path)}&token=${state.token}`;
+  const downloadUrl = `${API}/files/download?path=${encodeURIComponent(path)}&token=${state.token}`;
+
+  showModal(`
+    <div class="modal-header" style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <h3 style="display:flex;align-items:center;gap:8px">
+          <span style="color:#3b82f6">📄</span> ${escapeHtml(item.name)}
+        </h3>
+        <p style="font-size:12px;color:var(--text-secondary);margin:0">Documento de Texto (Office Word)</p>
+      </div>
+      <button class="btn-icon-soft" onclick="closeModal()" title="Fechar">✕</button>
+    </div>
+    <div class="modal-body" style="padding:16px">
+      <div class="office-sheet-wrapper">
+        <div class="office-doc-sheet" id="wordDocContainer">
+          <p style="color:#6b7280;text-align:center;padding:40px 0">Carregando e renderizando documento...</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="justify-content:space-between">
+      <div style="display:flex;gap:8px">
+        <button class="gallery-tool-btn" onclick="printElement('wordDocContainer')">🖨️ Imprimir</button>
+        <button class="gallery-tool-btn" onclick="copyElementText('wordDocContainer')">📋 Copiar Texto</button>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn-secondary" onclick="closeModal()">Fechar</button>
+        <button class="btn-primary-sm" onclick="window.open('${downloadUrl}', '_blank')">Baixar Original</button>
+      </div>
+    </div>
+  `, 'modal-xl');
+
+  const container = document.getElementById('wordDocContainer');
+  try {
+    if (window.mammoth && item.name.toLowerCase().endsWith('.docx')) {
+      const resp = await fetch(rawUrl);
+      const arrayBuffer = await resp.arrayBuffer();
+      const result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+      container.innerHTML = result.value || '<p>Documento vazio.</p>';
+      return;
+    }
+  } catch (err) {
+    console.warn('Mammoth render error, falling back:', err);
+  }
+
+  // Fallback backend
+  try {
+    const data = await fetchApi('GET', '/files/preview?path=' + encodeURIComponent(path));
+    if (data.paragraphs && data.paragraphs.length > 0) {
+      container.innerHTML = data.paragraphs.map(p => `<p>${escapeHtml(p)}</p>`).join('');
+    } else if (data.content) {
+      container.innerHTML = `<pre style="font-family:inherit;white-space:pre-wrap">${escapeHtml(data.content)}</pre>`;
+    } else {
+      container.innerHTML = '<p style="color:#9ca3af;text-align:center">Nenhum texto pôde ser extraído deste documento.</p>';
+    }
+  } catch (err) {
+    container.innerHTML = `<div style="text-align:center;padding:40px;color:#ef4444"><p>Não foi possível visualizar este arquivo no navegador.</p><button class="btn-primary-sm" style="margin-top:16px" onclick="window.open('${downloadUrl}', '_blank')">Fazer Download</button></div>`;
+  }
+}
+
+async function renderSpreadsheetModal(path, item) {
+  const rawUrl = `${API}/files/raw?path=${encodeURIComponent(path)}&token=${state.token}`;
+  const downloadUrl = `${API}/files/download?path=${encodeURIComponent(path)}&token=${state.token}`;
+
+  showModal(`
+    <div class="modal-header" style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <h3 style="display:flex;align-items:center;gap:8px">
+          <span style="color:#10b981">📊</span> ${escapeHtml(item.name)}
+        </h3>
+        <p style="font-size:12px;color:var(--text-secondary);margin:0">Planilha de Dados (Excel / CSV)</p>
+      </div>
+      <button class="btn-icon-soft" onclick="closeModal()" title="Fechar">✕</button>
+    </div>
+    <div class="modal-body" style="padding:16px">
+      <div class="spreadsheet-container">
+        <div class="spreadsheet-toolbar">
+          <input type="text" class="spreadsheet-search" placeholder="🔍 Filtrar nesta planilha..." oninput="filterSpreadsheetTable(this.value)">
+          <span id="sheetRowCount" style="font-size:12px;color:var(--text-secondary)">Carregando...</span>
+        </div>
+        <div class="spreadsheet-table-box" id="spreadsheetTableBox">
+          <div style="padding:40px;text-align:center;color:var(--text-tertiary)">Lendo células da planilha...</div>
+        </div>
+        <div class="spreadsheet-tabs" id="spreadsheetTabs"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal()">Fechar</button>
+      <button class="btn-primary-sm" onclick="window.open('${downloadUrl}', '_blank')">Baixar Planilha</button>
+    </div>
+  `, 'modal-xl');
+
+  const tableBox = document.getElementById('spreadsheetTableBox');
+  const tabsBox = document.getElementById('spreadsheetTabs');
+
+  try {
+    if (window.XLSX) {
+      const resp = await fetch(rawUrl);
+      const arrayBuffer = await resp.arrayBuffer();
+      currentWorkbook = XLSX.read(arrayBuffer, { type: 'array' });
+      
+      if (currentWorkbook.SheetNames && currentWorkbook.SheetNames.length > 0) {
+        tabsBox.innerHTML = currentWorkbook.SheetNames.map((name, i) => `
+          <button class="sheet-tab-btn ${i === 0 ? 'active' : ''}" onclick="selectSheetTab('${escapeHtml(name)}', this)">${escapeHtml(name)}</button>
+        `).join('');
+
+        showWorkbookSheet(currentWorkbook.SheetNames[0]);
+        return;
+      }
+    }
+  } catch (err) {
+    console.warn('XLSX client parser error, trying backend CSV fallback:', err);
+  }
+
+  // Fallback backend CSV
+  try {
+    const data = await fetchApi('GET', '/files/preview?path=' + encodeURIComponent(path));
+    if (data.type === 'csv' && data.headers) {
+      renderCsvTable(data.headers, data.rows, data.total_rows);
+    } else {
+      tableBox.innerHTML = `<pre style="padding:20px;color:var(--text-primary);font-family:var(--font-mono);font-size:12px">${escapeHtml(data.content || '')}</pre>`;
+    }
+  } catch (e) {
+    tableBox.innerHTML = `<div style="padding:40px;text-align:center;color:var(--system-red)">Erro ao ler planilha: ${e.message}</div>`;
+  }
+}
+
+function selectSheetTab(name, btn) {
+  document.querySelectorAll('.sheet-tab-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  showWorkbookSheet(name);
+}
+
+function showWorkbookSheet(sheetName) {
+  if (!currentWorkbook || !currentWorkbook.Sheets[sheetName]) return;
+  const sheet = currentWorkbook.Sheets[sheetName];
+  const tableBox = document.getElementById('spreadsheetTableBox');
+  const countEl = document.getElementById('sheetRowCount');
+
+  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+  if (!rows || rows.length === 0) {
+    tableBox.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-tertiary)">Planilha vazia.</div>';
+    if (countEl) countEl.textContent = '0 linhas';
+    return;
+  }
+
+  const maxCols = Math.max(...rows.slice(0, 100).map(r => r.length), 1);
+  let html = '<table class="spreadsheet-table" id="activeSpreadsheetTable"><thead><tr>';
+  html += '<th style="width:44px">#</th>';
+  for (let c = 0; c < maxCols; c++) {
+    const colLetter = String.fromCharCode(65 + (c % 26));
+    html += `<th>${colLetter}</th>`;
+  }
+  html += '</tr></thead><tbody>';
+
+  rows.slice(0, 500).forEach((row, rIdx) => {
+    html += `<tr><td class="row-num">${rIdx + 1}</td>`;
+    for (let c = 0; c < maxCols; c++) {
+      const val = row[c] !== undefined ? row[c] : '';
+      html += `<td>${escapeHtml(String(val))}</td>`;
+    }
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  tableBox.innerHTML = html;
+  if (countEl) countEl.textContent = `${rows.length} ${rows.length === 1 ? 'linha' : 'linhas'}`;
+}
+
+function renderCsvTable(headers, rows, total) {
+  const tableBox = document.getElementById('spreadsheetTableBox');
+  const countEl = document.getElementById('sheetRowCount');
+
+  let html = '<table class="spreadsheet-table" id="activeSpreadsheetTable"><thead><tr>';
+  html += '<th style="width:44px">#</th>';
+  headers.forEach(h => html += `<th>${escapeHtml(h)}</th>`);
+  html += '</tr></thead><tbody>';
+
+  rows.forEach((row, idx) => {
+    html += `<tr><td class="row-num">${idx + 1}</td>`;
+    headers.forEach((_, cIdx) => {
+      const val = row[cIdx] !== undefined ? row[cIdx] : '';
+      html += `<td>${escapeHtml(String(val))}</td>`;
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  tableBox.innerHTML = html;
+  if (countEl) countEl.textContent = `${total || rows.length} linhas`;
+}
+
+function filterSpreadsheetTable(q) {
+  const query = q.toLowerCase().trim();
+  const table = document.getElementById('activeSpreadsheetTable');
+  if (!table) return;
+  const rows = table.querySelectorAll('tbody tr');
+  rows.forEach(tr => {
+    if (!query) {
+      tr.style.display = '';
+      return;
+    }
+    const text = tr.innerText.toLowerCase();
+    tr.style.display = text.includes(query) ? '' : 'none';
+  });
+}
+
+async function renderPresentationModal(path, item) {
+  const downloadUrl = `${API}/files/download?path=${encodeURIComponent(path)}&token=${state.token}`;
+
+  showModal(`
+    <div class="modal-header" style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <h3 style="display:flex;align-items:center;gap:8px">
+          <span style="color:#f97316">📽️</span> ${escapeHtml(item.name)}
+        </h3>
+        <p style="font-size:12px;color:var(--text-secondary);margin:0">Apresentação de Slides (PowerPoint)</p>
+      </div>
+      <button class="btn-icon-soft" onclick="closeModal()" title="Fechar">✕</button>
+    </div>
+    <div class="modal-body" style="padding:24px 32px">
+      <div class="slides-wrapper" id="presentationContainer">
+        <p style="color:var(--text-secondary);text-align:center">Carregando slides...</p>
+      </div>
+    </div>
+    <div class="modal-footer" style="justify-content:space-between">
+      <div class="slide-controls" id="slideControlsBar" style="display:none">
+        <button class="gallery-tool-btn" id="btnPrevSlide" onclick="prevSlide()">◀ Slide Anterior</button>
+        <span id="slideIndicator" style="font-size:13px;font-weight:700;color:var(--text-primary)">Slide 1 de 1</span>
+        <button class="gallery-tool-btn" id="btnNextSlide" onclick="nextSlide()">Próximo Slide ▶</button>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn-secondary" onclick="closeModal()">Fechar</button>
+        <button class="btn-primary-sm" onclick="window.open('${downloadUrl}', '_blank')">Baixar Apresentação</button>
+      </div>
+    </div>
+  `, 'modal-xl');
+
+  try {
+    const data = await fetchApi('GET', '/files/preview?path=' + encodeURIComponent(path));
+    if (data.slides && data.slides.length > 0) {
+      currentPresentationSlides = data.slides;
+      currentSlideIndex = 0;
+      document.getElementById('slideControlsBar').style.display = 'flex';
+      renderCurrentSlide();
+    } else {
+      document.getElementById('presentationContainer').innerHTML = `
+        <div style="text-align:center;padding:40px">
+          <p style="color:var(--text-secondary);font-size:15px;margin-bottom:16px">Esta apresentação está pronta para download.</p>
+          <button class="btn-primary-sm" onclick="window.open('${downloadUrl}', '_blank')">Baixar Apresentação</button>
+        </div>
+      `;
+    }
+  } catch (e) {
+    document.getElementById('presentationContainer').innerHTML = `<p style="color:var(--system-red);text-align:center">Erro ao ler apresentação: ${e.message}</p>`;
+  }
+}
+
+function renderCurrentSlide() {
+  const container = document.getElementById('presentationContainer');
+  const indicator = document.getElementById('slideIndicator');
+  const prevBtn = document.getElementById('btnPrevSlide');
+  const nextBtn = document.getElementById('btnNextSlide');
+
+  if (!currentPresentationSlides || currentPresentationSlides.length === 0) return;
+  const slideText = currentPresentationSlides[currentSlideIndex];
+  
+  if (indicator) indicator.textContent = `Slide ${currentSlideIndex + 1} de ${currentPresentationSlides.length}`;
+  if (prevBtn) prevBtn.disabled = (currentSlideIndex === 0);
+  if (nextBtn) nextBtn.disabled = (currentSlideIndex === currentPresentationSlides.length - 1);
+
+  container.innerHTML = `
+    <div class="slide-card">
+      <h2>Slide ${currentSlideIndex + 1}</h2>
+      <div class="slide-body">${escapeHtml(slideText)}</div>
+    </div>
+  `;
+}
+
+function prevSlide() {
+  if (currentSlideIndex > 0) {
+    currentSlideIndex--;
+    renderCurrentSlide();
+  }
+}
+
+function nextSlide() {
+  if (currentSlideIndex < currentPresentationSlides.length - 1) {
+    currentSlideIndex++;
+    renderCurrentSlide();
+  }
+}
+
+async function renderTextModal(path, item) {
+  const downloadUrl = `${API}/files/download?path=${encodeURIComponent(path)}&token=${state.token}`;
+
+  try {
+    const data = await fetchApi('GET', '/files/preview?path=' + encodeURIComponent(path));
+    if (data.is_binary) {
+      showModal(`
+        <div class="modal-header">
+          <h3>${escapeHtml(item.name)}</h3>
+        </div>
+        <div class="modal-body" style="text-align:center;padding:60px 20px">
+          <svg class="svg-icon xl" viewBox="0 0 24 24" style="color:var(--text-tertiary);margin-bottom:16px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+          <p style="color:var(--text-secondary);font-size:15px;margin-bottom:16px">Este arquivo binário (${item.extension || 'desconhecido'}) não pode ser visualizado como texto.</p>
+          <button class="btn-primary-sm" onclick="window.open('${downloadUrl}', '_blank')">Fazer Download</button>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" onclick="closeModal()">Fechar</button>
+        </div>
+      `);
+      return;
+    }
+
+    showModal(`
+      <div class="modal-header" style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <h3>${escapeHtml(item.name)}</h3>
+          <p style="font-size:12px;color:var(--text-secondary);margin:0">Editor de Código / Texto (${data.language || 'text'})</p>
+        </div>
+        <button class="btn-icon-soft" onclick="closeModal()" title="Fechar">✕</button>
+      </div>
+      <div class="modal-body" style="padding:16px">
+        <textarea class="code-editor" id="codeContent">${escapeHtml(data.content || '')}</textarea>
+      </div>
+      <div class="modal-footer" style="justify-content:space-between">
+        <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+        <div style="display:flex;gap:10px">
+          <button class="btn-secondary" onclick="window.open('${downloadUrl}', '_blank')">Baixar</button>
+          <button class="btn-primary-sm" onclick="saveCode('${path}')">Salvar Edição</button>
+        </div>
+      </div>
+    `, 'modal-lg');
+  } catch (e) {
+    showModal(`
+      <div class="modal-header">
+        <h3>${escapeHtml(item.name)}</h3>
+      </div>
+      <div class="modal-body" style="text-align:center;padding:50px 20px">
+        <p style="color:var(--text-secondary);font-size:15px;margin-bottom:16px">Erro ao visualizar arquivo: ${e.message}</p>
+        <button class="btn-primary-sm" onclick="window.open('${downloadUrl}', '_blank')">Fazer Download</button>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal()">Fechar</button>
+      </div>
+    `);
+  }
+}
+
+async function openPreview(path) {
+  let item = state.items.find(i => i.path === path);
+  if (!item) {
+    const name = path.split('/').pop();
+    const ext = name.includes('.') ? ('.' + name.split('.').pop().toLowerCase()) : '';
+    item = {
+      path,
+      name,
+      extension: ext,
+      icon: (['.jpg','.jpeg','.png','.gif','.webp','.svg','.bmp','.ico','.tiff','.tif','.avif'].includes(ext)) ? 'image' :
+            (['.mp4','.avi','.mkv','.mov','.webm','.m4v','.ogv','.3gp'].includes(ext)) ? 'video' :
+            (['.mp3','.wav','.flac','.ogg','.m4a','.aac','.opus','.wma'].includes(ext)) ? 'audio' :
+            (ext === '.pdf') ? 'pdf' :
+            (['.doc','.docx','.odt','.rtf'].includes(ext)) ? 'document' :
+            (['.xls','.xlsx','.csv','.ods'].includes(ext)) ? 'spreadsheet' :
+            (['.ppt','.pptx','.odp'].includes(ext)) ? 'presentation' : 'file'
+    };
+  }
+
+  const ext = (item.extension || '.' + item.name.split('.').pop()).toLowerCase();
+
+  // 1. Imagem
+  if (item.icon === 'image' || ['.jpg','.jpeg','.png','.gif','.webp','.svg','.bmp','.ico','.tiff','.tif','.avif'].includes(ext)) {
+    state.galleryImages = state.items.filter(i => i.icon === 'image' || ['.jpg','.jpeg','.png','.gif','.webp','.svg','.bmp','.ico','.tiff','.tif','.avif'].some(e => (i.extension||'').toLowerCase() === e));
+    if (!state.galleryImages.some(i => i.path === path)) {
+      state.galleryImages.push(item);
+    }
     state.currentGalleryIndex = state.galleryImages.findIndex(i => i.path === path);
+    if (state.currentGalleryIndex === -1) state.currentGalleryIndex = 0;
     renderGalleryModal();
     return;
   }
 
-  if (item.icon === 'video') {
-    showModal(`
-      <div class="modal-header">
-        <h3>${item.name}</h3>
-      </div>
-      <div class="modal-body" style="text-align:center;background:#000">
-        <video controls autoplay style="max-width:100%;max-height:60vh;border-radius:var(--radius-sm);outline:none">
-          <source src="${url}">
-          Seu navegador não suporta a reprodução deste vídeo.
-        </video>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-secondary" onclick="closeModal()">Fechar</button>
-      </div>
-    `);
+  // 2. Vídeo
+  if (item.icon === 'video' || ['.mp4','.webm','.mkv','.mov','.avi','.m4v','.ogv','.3gp'].includes(ext)) {
+    renderVideoModal(path, item);
     return;
   }
 
-  if (item.icon === 'audio') {
-    showModal(`
-      <div class="modal-header">
-        <h3>${item.name}</h3>
-      </div>
-      <div class="modal-body" style="text-align:center;padding:40px 20px">
-        <svg class="svg-icon xl" viewBox="0 0 24 24" style="color:var(--accent);margin-bottom:24px"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-        <audio controls autoplay style="width:100%;outline:none">
-          <source src="${url}">
-          Seu navegador não suporta a reprodução de áudio.
-        </audio>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-secondary" onclick="closeModal()">Fechar</button>
-      </div>
-    `);
+  // 3. Música / Áudio
+  if (item.icon === 'audio' || ['.mp3','.wav','.flac','.ogg','.m4a','.aac','.opus','.wma','.mid','.midi'].includes(ext)) {
+    renderAudioModal(path, item);
     return;
   }
 
-  if (item.icon === 'pdf') {
-    showModal(`
-      <div class="modal-header">
-        <h3>${item.name}</h3>
-      </div>
-      <div class="modal-body" style="padding:0;height:65vh">
-        <iframe src="${url}" style="width:100%;height:100%;border:none"></iframe>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-secondary" onclick="closeModal()">Fechar</button>
-        <button class="btn-primary-sm" onclick="window.open('${url}', '_blank')">Abrir PDF</button>
-      </div>
-    `);
+  // 4. PDF
+  if (item.icon === 'pdf' || ext === '.pdf') {
+    renderPdfModal(path, item);
     return;
   }
 
-  try {
-    const data = await fetchApi('GET', '/files/preview?path=' + encodeURIComponent(path));
-    showModal(`
-      <div class="modal-header">
-        <h3>${item.name}</h3>
-      </div>
-      <div class="modal-body" style="padding:16px">
-        <textarea class="code-editor" id="codeContent">${escapeHtml(data.content)}</textarea>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
-        <button class="btn-primary-sm" onclick="saveCode('${path}')">Salvar Edição</button>
-      </div>
-    `);
-  } catch (e) {
-    // Fallback: Mostrar modal com botão de download
-    showModal(`
-      <div class="modal-header">
-        <h3>${item.name}</h3>
-      </div>
-      <div class="modal-body" style="text-align:center;padding:60px 20px">
-        <svg class="svg-icon xl" viewBox="0 0 24 24" style="color:var(--text-tertiary);margin-bottom:16px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-        <p style="color:var(--text-secondary);font-size:15px;margin-bottom:16px">Este tipo de arquivo (${item.extension || 'desconhecido'}) não pode ser visualizado no navegador.</p>
-        <button class="btn-primary-sm" onclick="window.open('${url}', '_blank')">Fazer Download</button>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-secondary" onclick="closeModal()">Fechar</button>
-      </div>
-    `);
+  // 5. Documentos Office Word
+  if (item.icon === 'document' || ['.doc','.docx','.odt','.rtf'].includes(ext)) {
+    renderWordModal(path, item);
+    return;
   }
+
+  // 6. Planilhas Excel / CSV
+  if (item.icon === 'spreadsheet' || ['.xls','.xlsx','.csv','.ods'].includes(ext)) {
+    renderSpreadsheetModal(path, item);
+    return;
+  }
+
+  // 7. Apresentações PowerPoint
+  if (item.icon === 'presentation' || ['.ppt','.pptx','.odp'].includes(ext)) {
+    renderPresentationModal(path, item);
+    return;
+  }
+
+  // 8. Arquivos de texto, código, markdown, json, etc.
+  renderTextModal(path, item);
 }
 
 async function saveCode(path) {
@@ -3064,57 +4022,18 @@ function switchAnalyzerTab(tab) {
 }
 
 
-function renderGalleryModal() {
-  const item = state.galleryImages[state.currentGalleryIndex];
-  if (!item) return;
-  const url = `${API}/files/download?path=${encodeURIComponent(item.path)}&token=${state.token}`;
-  
-  const isFirst = state.currentGalleryIndex === 0;
-  const isLast = state.currentGalleryIndex === state.galleryImages.length - 1;
-
-  showModal(`
-    <div class="modal-header" style="justify-content:center;position:relative">
-      <h3 style="flex:1;text-align:center">${item.name} <span style="font-size:12px;color:var(--text-secondary);font-weight:500">(${state.currentGalleryIndex + 1}/${state.galleryImages.length})</span></h3>
-    </div>
-    <div class="modal-body" style="display:flex;align-items:center;justify-content:center;background:var(--bg-main);position:relative;padding:0;min-height:50vh">
-      
-      <button onclick="prevGalleryImage()" style="position:absolute;left:20px;z-index:10;background:rgba(0,0,0,0.5);border:none;border-radius:50%;width:44px;height:44px;color:white;cursor:pointer;display:${isFirst ? 'none' : 'flex'};align-items:center;justify-content:center;transition:transform 0.2s">
-        <svg class="svg-icon lg" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-      </button>
-
-      <img src="${url}" style="max-width:100%;max-height:70vh;object-fit:contain;box-shadow:var(--shadow-float)">
-      
-      <button onclick="nextGalleryImage()" style="position:absolute;right:20px;z-index:10;background:rgba(0,0,0,0.5);border:none;border-radius:50%;width:44px;height:44px;color:white;cursor:pointer;display:${isLast ? 'none' : 'flex'};align-items:center;justify-content:center;transition:transform 0.2s">
-        <svg class="svg-icon lg" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
-      </button>
-
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeModal()">Fechar</button>
-      <button class="btn-primary-sm" onclick="window.open('${url}', '_blank')">Original</button>
-    </div>
-  `);
-}
-
-function prevGalleryImage() {
-  if (state.currentGalleryIndex > 0) {
-    state.currentGalleryIndex--;
-    renderGalleryModal();
-  }
-}
-
-function nextGalleryImage() {
-  if (state.currentGalleryIndex < state.galleryImages.length - 1) {
-    state.currentGalleryIndex++;
-    renderGalleryModal();
-  }
-}
-
-function showModal(html) {
-  document.getElementById('modalWindow').innerHTML = html;
+function showModal(html, sizeClass = '') {
+  const win = document.getElementById('modalWindow');
+  win.className = 'nova-modal ' + sizeClass;
+  win.innerHTML = html;
   document.getElementById('modalBackdrop').classList.add('show');
 }
+
 function closeModal() {
+  const modalAudio = document.querySelector('#modalWindow audio');
+  const modalVideo = document.querySelector('#modalWindow video');
+  if (modalAudio) { modalAudio.pause(); modalAudio.src = ''; }
+  if (modalVideo) { modalVideo.pause(); modalVideo.src = ''; }
   document.getElementById('modalBackdrop').classList.remove('show');
   state.galleryImages = [];
 }
