@@ -8,14 +8,27 @@
 #   uvicorn main:app --host 0.0.0.0 --port 8090
 
 import os
+import sys
 import json
 import shutil
+
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+if hasattr(sys.stderr, 'reconfigure'):
+    try:
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
 import zipfile
 import hashlib
 import uuid
 import mimetypes
 import io
 import datetime
+import time
 from pathlib import Path
 from typing import Optional, List
 
@@ -234,6 +247,331 @@ def get_file_icon(filename: str, is_dir: bool = False) -> str:
     }
     return icons.get(ext, "file")
 
+def to_relative_path(p: Path) -> str:
+    """Retorna caminho relativo normalizado ao ROOT_PATH com barra inicial."""
+    try:
+        root_resolved = Path(ROOT_PATH).resolve()
+        rel = str(p.resolve().relative_to(root_resolved)).replace("\\", "/")
+        return "/" + rel if rel != "." else "/"
+    except Exception:
+        name = p.name if hasattr(p, 'name') else str(p)
+        return "/" + name.lstrip("/")
+
+# Cache em memória para tamanhos de pastas: path_str -> (timestamp, size_bytes, file_count, dir_count)
+FOLDER_SIZE_CACHE = {}
+CACHE_TTL = 30  # 30 segundos
+
+def calculate_dir_size(dir_path: Path, max_depth: int = 15, current_depth: int = 0) -> tuple[int, int, int]:
+    """Calcula tamanho total em bytes, contagem de arquivos e subpastas recursivamente."""
+    path_str = str(dir_path.resolve()) if hasattr(dir_path, 'resolve') else str(dir_path)
+    now = time.time()
+    if path_str in FOLDER_SIZE_CACHE:
+        cached_time, c_size, c_files, c_dirs = FOLDER_SIZE_CACHE[path_str]
+        if now - cached_time < CACHE_TTL:
+            return c_size, c_files, c_dirs
+
+    total_size = 0
+    file_count = 0
+    dir_count = 0
+
+    try:
+        with os.scandir(dir_path) as it:
+            for entry in it:
+                try:
+                    name = entry.name
+                    if name in ('.trash', '.git', '.venv', '__pycache__', '.run-data'):
+                        continue
+                    if entry.is_file(follow_symlinks=False):
+                        total_size += entry.stat(follow_symlinks=False).st_size
+                        file_count += 1
+                    elif entry.is_dir(follow_symlinks=False):
+                        dir_count += 1
+                        if current_depth < max_depth:
+                            sub_size, sub_files, sub_dirs = calculate_dir_size(
+                                Path(entry.path), max_depth=max_depth, current_depth=current_depth + 1
+                            )
+                            total_size += sub_size
+                            file_count += sub_files
+                            dir_count += sub_dirs
+                except (PermissionError, FileNotFoundError, OSError):
+                    continue
+    except (PermissionError, FileNotFoundError, OSError):
+        pass
+
+    FOLDER_SIZE_CACHE[path_str] = (now, total_size, file_count, dir_count)
+    return total_size, file_count, dir_count
+
+def search_files_deep(base_path: Path, query: str, recursive: bool = True, file_type: Optional[str] = None, limit: int = 300) -> list:
+    """Busca arquivos e pastas com suporte a pesquisa recursiva e filtros de tipo."""
+    query_lower = query.lower().strip()
+    results = []
+
+    type_extensions = {
+        "image": {".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp", ".ico", ".bmp", ".tiff"},
+        "video": {".mp4", ".avi", ".mkv", ".mov", ".webm", ".flv", ".wmv", ".m4v"},
+        "audio": {".mp3", ".wav", ".flac", ".ogg", ".aac", ".m4a", ".wma"},
+        "document": {".pdf", ".doc", ".docx", ".odt", ".rtf", ".txt", ".md", ".xls", ".xlsx", ".csv", ".ppt", ".pptx"},
+        "code": {".py", ".js", ".ts", ".jsx", ".tsx", ".html", ".css", ".json", ".xml", ".yaml", ".yml", ".sh", ".bat", ".sql", ".c", ".cpp", ".h", ".rs", ".go", ".php", ".env"},
+        "archive": {".zip", ".rar", ".7z", ".tar", ".gz", ".bz2", ".xz"}
+    }
+
+    def matches_type(name: str, is_dir: bool) -> bool:
+        if not file_type or file_type == "all":
+            return True
+        if file_type == "folder":
+            return is_dir
+        if file_type == "file":
+            return not is_dir
+        if is_dir:
+            return False
+        ext = Path(name).suffix.lower()
+        allowed = type_extensions.get(file_type, set())
+        return ext in allowed
+
+    if not recursive:
+        try:
+            with os.scandir(base_path) as it:
+                for entry in it:
+                    if entry.name.startswith(".") and entry.name not in (".", ".."):
+                        continue
+                    if query_lower in entry.name.lower():
+                        is_dir = entry.is_dir(follow_symlinks=False)
+                        if not matches_type(entry.name, is_dir):
+                            continue
+                        stat = entry.stat(follow_symlinks=False)
+                        rel = to_relative_path(Path(entry.path))
+                        parent_rel = str(Path(rel).parent).replace("\\", "/")
+                        if parent_rel == ".":
+                            parent_rel = "/"
+
+                        size = stat.st_size if not is_dir else 0
+                        results.append({
+                            "name": entry.name,
+                            "path": rel,
+                            "directory": parent_rel,
+                            "is_dir": is_dir,
+                            "size": size,
+                            "size_formatted": format_size(size) if not is_dir else "",
+                            "modified": datetime.datetime.fromtimestamp(stat.st_mtime).isoformat() if stat.st_mtime else "",
+                            "icon": get_file_icon(entry.name, is_dir),
+                            "extension": Path(entry.name).suffix.lower() if not is_dir else ""
+                        })
+                        if len(results) >= limit:
+                            break
+        except Exception:
+            pass
+        return results
+
+    # Busca recursiva
+    try:
+        for root, dirs, files in os.walk(str(base_path), topdown=True):
+            dirs[:] = [d for d in dirs if not d.startswith(".") and d not in ('.trash', '.git', '.venv', '__pycache__', '.run-data')]
+            current_root_p = Path(root)
+
+            for d in dirs:
+                if query_lower in d.lower():
+                    if matches_type(d, True):
+                        dp = current_root_p / d
+                        try:
+                            st = dp.stat(follow_symlinks=False)
+                            rel = to_relative_path(dp)
+                            parent_rel = str(Path(rel).parent).replace("\\", "/")
+                            results.append({
+                                "name": d,
+                                "path": rel,
+                                "directory": parent_rel,
+                                "is_dir": True,
+                                "size": 0,
+                                "size_formatted": "",
+                                "modified": datetime.datetime.fromtimestamp(st.st_mtime).isoformat() if st.st_mtime else "",
+                                "icon": "folder",
+                                "extension": ""
+                            })
+                            if len(results) >= limit:
+                                return results
+                        except Exception:
+                            continue
+
+            for f in files:
+                if f.startswith("."):
+                    continue
+                if query_lower in f.lower():
+                    if matches_type(f, False):
+                        fp = current_root_p / f
+                        try:
+                            st = fp.stat(follow_symlinks=False)
+                            rel = to_relative_path(fp)
+                            parent_rel = str(Path(rel).parent).replace("\\", "/")
+                            results.append({
+                                "name": f,
+                                "path": rel,
+                                "directory": parent_rel,
+                                "is_dir": False,
+                                "size": st.st_size,
+                                "size_formatted": format_size(st.st_size),
+                                "modified": datetime.datetime.fromtimestamp(st.st_mtime).isoformat() if st.st_mtime else "",
+                                "icon": get_file_icon(f, False),
+                                "extension": Path(f).suffix.lower()
+                            })
+                            if len(results) >= limit:
+                                return results
+                        except Exception:
+                            continue
+    except Exception:
+        pass
+
+    return results
+
+def analyze_path_space(full_path: Path, base_rel_path: str):
+    """
+    Analisa os tamanhos das subpastas diretas e ranqueia a pasta que mais ocupa espaço,
+    além de encontrar o top 10 maiores pastas e top 10 maiores arquivos em profundidade.
+    """
+    direct_folders = []
+    direct_files_size = 0
+    direct_files_count = 0
+
+    all_scanned_folders = []
+    all_scanned_files = []
+
+    # 1. Analisa as pastas e arquivos diretos de full_path
+    try:
+        with os.scandir(full_path) as it:
+            for entry in it:
+                if entry.name.startswith(".") or entry.name in ('.trash', '.git', '.venv', '__pycache__', '.run-data'):
+                    continue
+                try:
+                    if entry.is_file(follow_symlinks=False):
+                        size = entry.stat(follow_symlinks=False).st_size
+                        mtime = entry.stat(follow_symlinks=False).st_mtime
+                        direct_files_size += size
+                        direct_files_count += 1
+                        rel = to_relative_path(Path(entry.path))
+                        all_scanned_files.append({
+                            "name": entry.name,
+                            "path": rel,
+                            "size": size,
+                            "size_formatted": format_size(size),
+                            "modified": datetime.datetime.fromtimestamp(mtime).isoformat() if mtime else "",
+                            "icon": get_file_icon(entry.name, False),
+                            "extension": Path(entry.name).suffix.lower()
+                        })
+                    elif entry.is_dir(follow_symlinks=False):
+                        folder_size, f_count, d_count = calculate_dir_size(Path(entry.path))
+                        rel = to_relative_path(Path(entry.path))
+                        
+                        f_info = {
+                            "name": entry.name,
+                            "path": rel,
+                            "size": folder_size,
+                            "size_formatted": format_size(folder_size),
+                            "files_count": f_count,
+                            "dirs_count": d_count,
+                            "icon": "folder"
+                        }
+                        direct_folders.append(f_info)
+                        all_scanned_folders.append(f_info)
+                except (PermissionError, FileNotFoundError, OSError):
+                    continue
+    except (PermissionError, FileNotFoundError, OSError):
+        pass
+
+    # 2. Caminhar pelas subpastas para coletar maiores pastas e arquivos (profundidade)
+    scan_count = 0
+    max_scan = 5000
+    try:
+        for root, dirs, files in os.walk(str(full_path), topdown=True):
+            dirs[:] = [d for d in dirs if not d.startswith(".") and d not in ('.trash', '.git', '.venv', '__pycache__', '.run-data', 'node_modules')]
+            current_root_p = Path(root)
+            
+            if current_root_p.resolve() != full_path.resolve():
+                f_size, f_count, d_count = calculate_dir_size(current_root_p)
+                rel = to_relative_path(current_root_p)
+                
+                if not any(f["path"] == rel for f in all_scanned_folders):
+                    all_scanned_folders.append({
+                        "name": current_root_p.name,
+                        "path": rel,
+                        "size": f_size,
+                        "size_formatted": format_size(f_size),
+                        "files_count": f_count,
+                        "dirs_count": d_count,
+                        "icon": "folder"
+                    })
+
+            for f in files:
+                if f.startswith("."):
+                    continue
+                scan_count += 1
+                if scan_count > max_scan:
+                    break
+                fp = current_root_p / f
+                try:
+                    st = fp.stat(follow_symlinks=False)
+                    rel = to_relative_path(fp)
+                    if not any(item["path"] == rel for item in all_scanned_files):
+                        all_scanned_files.append({
+                            "name": f,
+                            "path": rel,
+                            "size": st.st_size,
+                            "size_formatted": format_size(st.st_size),
+                            "modified": datetime.datetime.fromtimestamp(st.st_mtime).isoformat() if st.st_mtime else "",
+                            "icon": get_file_icon(f, False),
+                            "extension": Path(f).suffix.lower()
+                        })
+                except Exception:
+                    continue
+            if scan_count > max_scan:
+                break
+    except Exception:
+        pass
+
+    total_direct_folder_size = sum(f["size"] for f in direct_folders)
+    total_content_size = total_direct_folder_size + direct_files_size
+
+    for f in direct_folders:
+        f["percent"] = round((f["size"] / total_content_size * 100), 1) if total_content_size > 0 else 0
+        f["is_heaviest"] = False
+
+    direct_folders.sort(key=lambda x: x["size"], reverse=True)
+    if direct_folders and direct_folders[0]["size"] > 0:
+        direct_folders[0]["is_heaviest"] = True
+
+    all_scanned_folders.sort(key=lambda x: x["size"], reverse=True)
+    top_folders = all_scanned_folders[:10]
+
+    all_scanned_files.sort(key=lambda x: x["size"], reverse=True)
+    top_files = all_scanned_files[:10]
+
+    disk_total, disk_used, disk_free = 0, 0, 0
+    try:
+        disk = shutil.disk_usage(full_path)
+        disk_total, disk_used, disk_free = disk.total, disk.used, disk.free
+    except Exception:
+        pass
+
+    heaviest = direct_folders[0] if (direct_folders and direct_folders[0]["size"] > 0) else (top_folders[0] if (top_folders and top_folders[0]["size"] > 0) else None)
+
+    return {
+        "analyzed_path": base_rel_path,
+        "total_content_size": total_content_size,
+        "total_content_size_formatted": format_size(total_content_size),
+        "direct_files_size": direct_files_size,
+        "direct_files_size_formatted": format_size(direct_files_size),
+        "direct_files_count": direct_files_count,
+        "direct_folders_count": len(direct_folders),
+        "disk_total": disk_total,
+        "disk_total_formatted": format_size(disk_total),
+        "disk_used": disk_used,
+        "disk_used_formatted": format_size(disk_used),
+        "disk_free": disk_free,
+        "disk_free_formatted": format_size(disk_free),
+        "heaviest_folder": heaviest,
+        "folders": direct_folders,
+        "top_folders": top_folders,
+        "top_files": top_files
+    }
+
 # =============================================================================
 # Rotas de Autenticação
 # =============================================================================
@@ -288,6 +626,7 @@ async def get_me(current_user: dict = Depends(get_current_user)):
 async def list_files(
     path: str = Query("/", description="Caminho do diretório"),
     search: Optional[str] = Query(None, description="Termo de busca"),
+    calc_folder_sizes: bool = Query(False, description="Calcular tamanho de cada pasta"),
     current_user: dict = Depends(get_current_user),
     x_secure_code: Optional[str] = Header(None)
 ):
@@ -332,21 +671,30 @@ async def list_files(
                 pass
             
             # Filtro de busca (opcional)
-            if search and search.lower() not in entry.name.lower():
+            search_str = search if isinstance(search, str) and search.strip() else None
+            if search_str and search_str.lower() not in entry.name.lower():
                 continue
             
-            try:
-                rel = str(entry.relative_to(ROOT_PATH))
-                rel_path = "/" + rel.lstrip("/") if rel != "." else "/"
-            except Exception:
-                rel_path = "/" + entry.name
+            rel_path = to_relative_path(entry)
+            
+            dir_size = 0
+            dir_size_formatted = ""
+            if is_dir:
+                path_str = str(entry.resolve()) if hasattr(entry, 'resolve') else str(entry)
+                now = time.time()
+                if calc_folder_sizes:
+                    dir_size, _, _ = calculate_dir_size(entry)
+                    dir_size_formatted = format_size(dir_size)
+                elif path_str in FOLDER_SIZE_CACHE and (now - FOLDER_SIZE_CACHE[path_str][0] < CACHE_TTL):
+                    dir_size = FOLDER_SIZE_CACHE[path_str][1]
+                    dir_size_formatted = format_size(dir_size)
             
             items.append({
                 "name": entry.name,
                 "path": rel_path,
                 "is_dir": is_dir,
-                "size": stat_size if not is_dir else 0,
-                "size_formatted": format_size(stat_size) if not is_dir else "",
+                "size": stat_size if not is_dir else dir_size,
+                "size_formatted": format_size(stat_size) if not is_dir else dir_size_formatted,
                 "modified": datetime.datetime.fromtimestamp(stat_mtime).isoformat() if stat_mtime else "",
                 "icon": get_file_icon(entry.name, is_dir),
                 "extension": Path(entry.name).suffix.lower() if not is_dir else "",
@@ -374,6 +722,50 @@ async def list_files(
         "current_path": path,
         "total": len(items),
         "directory": full_path.name if full_path.name else "/"
+    }
+
+@app.get("/api/files/search")
+async def search_files(
+    query: str = Query(..., min_length=1, description="Termo de busca"),
+    path: str = Query("/", description="Caminho do diretório base"),
+    recursive: bool = Query(True, description="Pesquisar recursivamente em subpastas"),
+    file_type: Optional[str] = Query(None, description="Filtro de tipo (folder, file, image, video, audio, document, code, archive)"),
+    limit: int = Query(300, ge=1, le=1000, description="Limite máximo de resultados"),
+    current_user: dict = Depends(get_current_user),
+    x_secure_code: Optional[str] = Header(None)
+):
+    """Pesquisa arquivos e pastas com suporte a busca recursiva e filtros de tipo."""
+    check_security(path, x_secure_code)
+    base_full = get_full_path(path)
+    
+    if not base_full.exists():
+        raise HTTPException(404, "Diretório não encontrado")
+    if not base_full.is_dir():
+        raise HTTPException(400, "Caminho base não é um diretório")
+    
+    limit_val = 300
+    try:
+        limit_val = int(limit)
+    except Exception:
+        limit_val = 300
+
+    recursive_val = True
+    if isinstance(recursive, bool):
+        recursive_val = recursive
+    elif isinstance(recursive, str):
+        recursive_val = recursive.lower() in ("true", "1", "yes")
+
+    file_type_val = file_type if isinstance(file_type, str) else None
+
+    results = search_files_deep(base_full, str(query), recursive=recursive_val, file_type=file_type_val, limit=limit_val)
+    return {
+        "query": str(query),
+        "base_path": path,
+        "recursive": recursive_val,
+        "file_type": file_type_val or "all",
+        "total": len(results),
+        "truncated": len(results) >= limit_val,
+        "items": results
     }
 
 @app.get("/api/files/info")
@@ -994,6 +1386,43 @@ async def storage_info(current_user: dict = Depends(get_current_user)):
     except:
         return {"total": 0, "used": 0, "free": 0, "error": "Não foi possível obter informações do disco"}
 
+@app.get("/api/storage/breakdown")
+async def storage_breakdown(
+    path: str = Query("/", description="Caminho do diretório a analisar"),
+    current_user: dict = Depends(get_current_user),
+    x_secure_code: Optional[str] = Header(None)
+):
+    """Retorna análise detalhada do espaço em disco: ranking de pastas que mais ocupam espaço, maiores pastas e arquivos."""
+    check_security(path, x_secure_code)
+    full_path = get_full_path(path)
+    if not full_path.exists():
+        raise HTTPException(404, "Diretório não encontrado")
+    if not full_path.is_dir():
+        raise HTTPException(400, "Caminho não é um diretório")
+
+    return analyze_path_space(full_path, path)
+
+@app.get("/api/storage/folder-size")
+async def get_folder_size(
+    path: str = Query(..., description="Caminho da pasta"),
+    current_user: dict = Depends(get_current_user),
+    x_secure_code: Optional[str] = Header(None)
+):
+    """Calcula e retorna o tamanho total ocupado por uma pasta."""
+    check_security(path, x_secure_code)
+    full_path = get_full_path(path)
+    if not full_path.exists() or not full_path.is_dir():
+        raise HTTPException(404, "Pasta não encontrada")
+
+    size, files, dirs = calculate_dir_size(full_path)
+    return {
+        "path": path,
+        "size": size,
+        "size_formatted": format_size(size),
+        "files_count": files,
+        "dirs_count": dirs
+    }
+
 # =============================================================================
 # Frontend Static Files (deve ser montado APÓS todas as rotas da API)
 # =============================================================================
@@ -1030,10 +1459,13 @@ async def startup():
     # Carrega/cria usuários
     load_users()
     
-    print(f"🚀 NovaDrive iniciado!")
-    print(f"📂 Diretório raiz: {ROOT_PATH}")
-    print(f"🔑 Admin padrão: admin / admin")
-    print(f"🌐 http://0.0.0.0:{PORT}")
+    try:
+        print(f"🚀 NovaDrive iniciado!")
+        print(f"📂 Diretório raiz: {ROOT_PATH}")
+        print(f"🔑 Admin padrão: admin / admin")
+        print(f"🌐 http://0.0.0.0:{PORT}")
+    except Exception:
+        print(f"[NovaDrive] Iniciado! Diretorio: {ROOT_PATH}, Porta: {PORT}")
 
 if __name__ == "__main__":
     import uvicorn

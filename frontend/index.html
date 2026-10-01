@@ -518,16 +518,17 @@ body {
 .search-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 16px;
+  gap: 8px;
+  padding: 6px 14px;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
-  width: 220px;
+  width: 270px;
   transition: var(--bounce);
+  position: relative;
 }
 .search-bar:focus-within {
-  width: 280px;
+  width: 340px;
   border-color: var(--accent);
   background: var(--bg-card-hover);
   box-shadow: 0 0 0 4px var(--accent-soft);
@@ -537,12 +538,381 @@ body {
   border: none;
   outline: none;
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: 13px;
   width: 100%;
   font-family: var(--font-sans);
 }
 .search-bar input::placeholder { color: var(--text-tertiary); }
-.search-bar .svg-icon { color: var(--text-secondary); }
+.search-bar .svg-icon { color: var(--text-secondary); flex-shrink: 0; }
+
+.search-scope-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.search-scope-btn:hover {
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+  border-color: var(--accent-glow);
+}
+.search-scope-btn.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.search-clear-btn {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: var(--transition);
+}
+.search-clear-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Search Banner */
+.search-banner {
+  background: rgba(139, 92, 246, 0.08);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: var(--radius-md);
+  padding: 14px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  animation: slideIn 0.3s ease;
+}
+.search-banner-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+.search-banner-info strong { color: var(--accent-hover); }
+.search-banner-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.filter-chip {
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--bounce);
+}
+.filter-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+.filter-chip.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+.btn-clear-search {
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: var(--system-red);
+  cursor: pointer;
+  transition: var(--bounce);
+}
+.btn-clear-search:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.search-dir-badge {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
+/* Sortable column header */
+.sortable-col {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--transition);
+}
+.sortable-col:hover {
+  color: var(--text-primary);
+}
+.sort-indicator {
+  font-size: 11px;
+  color: var(--accent);
+}
+
+/* Space Analyzer Modal & Styles */
+.analyzer-modal {
+  max-width: 860px;
+  width: 90vw;
+}
+.heaviest-spotlight {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%);
+  border: 1px solid var(--accent-glow);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  box-shadow: var(--shadow-glow);
+  position: relative;
+  overflow: hidden;
+}
+.heaviest-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #fbbf24;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+.heaviest-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.heaviest-path {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+.heaviest-stat {
+  text-align: right;
+  flex-shrink: 0;
+}
+.heaviest-size {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--accent-hover);
+}
+.heaviest-percent {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.analyzer-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.analyzer-stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+}
+.analyzer-stat-card .label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+.analyzer-stat-card .val {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.analyzer-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+}
+.analyzer-tab-btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  background: none;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--bounce);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.analyzer-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+.analyzer-tab-btn.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.analyzer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 48vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.analyzer-row {
+  display: grid;
+  grid-template-columns: 36px 1fr 120px 100px 90px;
+  align-items: center;
+  padding: 10px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  transition: var(--bounce);
+  gap: 12px;
+}
+.analyzer-row:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border);
+  transform: translateX(3px);
+}
+.analyzer-rank {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+.analyzer-rank.gold { color: #f59e0b; }
+.analyzer-rank.silver { color: #94a3b8; }
+.analyzer-rank.bronze { color: #d97706; }
+
+.analyzer-row-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.analyzer-row-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.analyzer-row-sub {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+.analyzer-bar-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.analyzer-mini-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+.analyzer-mini-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  transition: width 0.6s ease;
+}
+.analyzer-mini-bar-fill.heavy {
+  background: linear-gradient(90deg, #f59e0b, #ef4444);
+}
+.analyzer-bar-percent {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  font-weight: 600;
+}
+.analyzer-row-size {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-align: right;
+}
+.analyzer-row-action button {
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: var(--bounce);
+  width: 100%;
+}
+.analyzer-row-action button:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-glow);
+}
 
 /* View Mode Segmented Control */
 .segmented-control {
@@ -1229,23 +1599,29 @@ body {
           <span style="flex:1">Root</span>
           <svg class="svg-icon lock-icon" viewBox="0 0 24 24" style="width:14px;height:14px;opacity:0.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
         </button>
-
+        <button class="nav-btn" onclick="openStorageAnalyzer()" title="Analisador de Espaço (Ver qual pasta ocupa mais espaço)">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+          <span style="flex:1">Analisador de Espaço</span>
+        </button>
       </div>
     </div>
 
-
-
-
-
     <div class="sidebar-spacer"></div>
 
-    <div class="storage-widget">
+    <div class="storage-widget" onclick="openStorageAnalyzer()" style="cursor:pointer" title="Clique para analisar espaço ocupado pelas pastas">
       <div class="storage-info">
-        <span>Storage</span>
+        <span style="display:flex;align-items:center;gap:6px">
+          <svg class="svg-icon" style="width:13px;height:13px;color:var(--accent)" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+          Storage
+        </span>
         <span id="storageLabel">—</span>
       </div>
       <div class="storage-track">
         <div class="storage-fill" id="storageMeter" style="width: 0%"></div>
+      </div>
+      <div style="font-size:11px;color:var(--accent);margin-top:6px;display:flex;align-items:center;gap:4px;font-weight:600">
+        <span>Ver maiores pastas</span>
+        <svg class="svg-icon" style="width:11px;height:11px" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
       </div>
     </div>
   </aside>
@@ -1272,19 +1648,33 @@ body {
       </div>
 
       <div class="toolbar-right">
-        <div class="search-bar">
+        <div class="search-bar" id="searchBar">
           <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          <input type="text" placeholder="Buscar arquivos..." oninput="handleSearch(this.value)">
+          <input type="text" id="searchInput" placeholder="Buscar arquivos..." oninput="handleSearch(this.value)" autocomplete="off">
+          <button type="button" class="search-scope-btn active" id="searchScopeBtn" onclick="toggleSearchScope(event)" title="Alternar escopo de busca">
+            <span id="searchScopeText">Recursivo</span>
+          </button>
+          <button type="button" class="search-clear-btn" id="searchClearBtn" onclick="clearSearch()" title="Limpar busca" style="display:none">
+            <svg class="svg-icon" style="width:14px;height:14px" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
         </div>
 
         <div class="segmented-control">
-          <button class="segmented-btn active" id="btnGrid" onclick="setView('grid')">
+          <button class="segmented-btn active" id="btnGrid" onclick="setView('grid')" title="Visualização em Grade">
             <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"></rect><rect x="14" y="3" width="7" height="7" rx="2"></rect><rect x="14" y="14" width="7" height="7" rx="2"></rect><rect x="3" y="14" width="7" height="7" rx="2"></rect></svg>
           </button>
-          <button class="segmented-btn" id="btnList" onclick="setView('list')">
+          <button class="segmented-btn" id="btnList" onclick="setView('list')" title="Visualização em Lista">
             <svg class="svg-icon" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
           </button>
+          <button class="segmented-btn" id="btnFolderSizes" onclick="toggleFolderSizes()" title="Calcular tamanho real das pastas">
+            <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          </button>
         </div>
+
+        <button class="btn-icon-soft" onclick="openStorageAnalyzer()" title="Analisador de Espaço (Ver qual pasta ocupa mais espaço)" style="height:36px;padding:0 12px;border-radius:var(--radius-full);display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+          <span>Espaço</span>
+        </button>
 
         <button class="btn-primary-sm" style="margin:0;padding:8px 16px" onclick="openUploadModal()">
           Upload
@@ -1320,6 +1710,9 @@ body {
   </button>
   <button class="nova-menu-item" onclick="triggerAction('rename')" title="Renomear">
     <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+  </button>
+  <button class="nova-menu-item" id="menuShowInFolder" style="display:none" onclick="triggerAction('show-in-folder')" title="Ir para a pasta deste item">
+    <svg class="svg-icon" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
   </button>
   <div class="nova-menu-sep"></div>
   <button class="nova-menu-item" onclick="triggerAction('share')" title="Gerar Link Público">
@@ -1375,8 +1768,29 @@ document.addEventListener('keydown', (e) => {
     return;
   }
   
-  // Don't intercept if typing in search or inputs
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  // Intercept Ctrl+F or / anywhere to focus search
+  if (((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F')) || (e.key === '/' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA')) {
+    e.preventDefault();
+    const input = document.getElementById('searchInput');
+    if (input) {
+      input.focus();
+      input.select();
+    }
+    return;
+  }
+
+  // Don't intercept other keys if typing in inputs
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+    if (e.key === 'Escape' && e.target.id === 'searchInput') {
+      clearSearch();
+    }
+    return;
+  }
+
+  if (e.key === 'Escape' && state.isSearching) {
+    clearSearch();
+    return;
+  }
 
   if (e.key === 'Delete' && state.selected.size > 0) {
     const paths = Array.from(state.selected);
@@ -1404,6 +1818,12 @@ const state = {
   selected: new Set(),
   viewMode: 'grid',
   searchQuery: '',
+  searchRecursive: true,
+  searchFilter: 'all',
+  isSearching: false,
+  calcFolderSizes: false,
+  sortBy: 'name',
+  sortAsc: true,
   activeItem: null,
   galleryImages: [],
   currentGalleryIndex: 0,
@@ -1529,6 +1949,7 @@ async function loadFiles(path) {
   
   state.currentPath = path;
   state.selected.clear();
+  state.isSearching = false;
   
   // Atualiza sidebar ativa
   document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -1545,34 +1966,102 @@ async function loadFiles(path) {
 
   try {
     const params = new URLSearchParams({ path });
-    if (state.searchQuery) params.set('search', state.searchQuery);
+    if (state.calcFolderSizes) params.set('calc_folder_sizes', 'true');
     const data = await fetchApi('GET', '/files?' + params);
-    state.items = data.items;
-    renderViewport(data);
+    state.items = data.items || [];
+    applySortAndRender();
     renderBreadcrumbs(data.breadcrumbs);
   } catch (e) {
     container.innerHTML = `<div class="empty-view"><h3 style="color:var(--system-red)">Erro</h4><p>${e.message}</p></div>`;
   }
 }
 
+function sortItems(by) {
+  if (state.sortBy === by) {
+    state.sortAsc = !state.sortAsc;
+  } else {
+    state.sortBy = by;
+    state.sortAsc = (by === 'name');
+    if (by === 'size') state.sortAsc = false;
+  }
+  applySortAndRender();
+}
+
+function applySortAndRender() {
+  if (!state.items) return;
+  state.items.sort((a, b) => {
+    if (state.sortBy === 'size') {
+      const sizeA = a.size || 0;
+      const sizeB = b.size || 0;
+      return state.sortAsc ? sizeA - sizeB : sizeB - sizeA;
+    }
+    if (state.sortBy === 'modified') {
+      const dateA = a.modified || '';
+      const dateB = b.modified || '';
+      return state.sortAsc ? dateA.localeCompare(dateB) : dateB.localeCompare(dateA);
+    }
+    if (a.is_dir !== b.is_dir && !state.isSearching) {
+      return a.is_dir ? -1 : 1;
+    }
+    const nameA = a.name.toLowerCase();
+    const nameB = b.name.toLowerCase();
+    return state.sortAsc ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+  });
+  renderViewport({ items: state.items, isSearch: state.isSearching });
+}
 
 function renderViewport(data) {
   const container = document.getElementById('fileContainer');
-  if (!data.items || data.items.length === 0) {
-    container.innerHTML = `
-      <div class="empty-view">
-        <svg class="svg-icon xl" viewBox="0 0 24 24" style="color:var(--accent)"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-        <h3>Tudo limpo por aqui</h3>
-        <p>Arraste arquivos ou clique no botão de upload.</p>
+  const items = data.items || [];
+  const isSearch = data.isSearch || state.isSearching;
+
+  let searchBannerHtml = '';
+  if (isSearch) {
+    searchBannerHtml = `
+      <div class="search-banner">
+        <div class="search-banner-info">
+          <svg class="svg-icon" style="color:var(--accent)" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <span>Resultados para <strong>"${escapeHtml(state.searchQuery)}"</strong> ${state.searchRecursive ? 'em subpastas' : 'nesta pasta'} — <strong>${items.length} ${items.length === 1 ? 'item encontrado' : 'itens encontrados'}</strong></span>
+        </div>
+        <div class="search-banner-actions">
+          <button class="filter-chip ${state.searchFilter === 'all' ? 'active' : ''}" onclick="setSearchFilter('all')">Todos</button>
+          <button class="filter-chip ${state.searchFilter === 'folder' ? 'active' : ''}" onclick="setSearchFilter('folder')">📁 Pastas</button>
+          <button class="filter-chip ${state.searchFilter === 'document' ? 'active' : ''}" onclick="setSearchFilter('document')">📄 Documentos</button>
+          <button class="filter-chip ${state.searchFilter === 'image' ? 'active' : ''}" onclick="setSearchFilter('image')">🖼️ Imagens</button>
+          <button class="filter-chip ${state.searchFilter === 'video' ? 'active' : ''}" onclick="setSearchFilter('video')">🎬 Vídeos</button>
+          <button class="filter-chip ${state.searchFilter === 'code' ? 'active' : ''}" onclick="setSearchFilter('code')">💻 Código</button>
+          <button class="filter-chip ${state.searchFilter === 'archive' ? 'active' : ''}" onclick="setSearchFilter('archive')">📦 Zips</button>
+          <button class="btn-clear-search" onclick="clearSearch()">Limpar Busca ✕</button>
+        </div>
       </div>
     `;
+  }
+
+  if (items.length === 0) {
+    if (isSearch) {
+      container.innerHTML = searchBannerHtml + `
+        <div class="empty-view">
+          <svg class="svg-icon xl" viewBox="0 0 24 24" style="color:var(--text-tertiary)"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <h3>Nenhum arquivo ou pasta encontrado</h3>
+          <p>Nenhum item corresponde a "${escapeHtml(state.searchQuery)}". Tente outro termo ou ative a busca recursiva.</p>
+        </div>
+      `;
+    } else {
+      container.innerHTML = `
+        <div class="empty-view">
+          <svg class="svg-icon xl" viewBox="0 0 24 24" style="color:var(--accent)"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+          <h3>Tudo limpo por aqui</h3>
+          <p>Arraste arquivos ou clique no botão de upload.</p>
+        </div>
+      `;
+    }
     return;
   }
 
   if (state.viewMode === 'grid') {
-    container.innerHTML = `<div class="file-grid">${data.items.map((item, i) => `
+    container.innerHTML = searchBannerHtml + `<div class="file-grid">${items.map((item, i) => `
       <div class="grid-card ${state.selected.has(item.path) ? 'selected' : ''}"
-           style="animation-delay: ${i * 0.03}s"
+           style="animation-delay: ${i * 0.02}s"
            onclick="selectItem('${item.path}', event)"
            ondblclick="${item.is_dir ? `navigateTo('${item.path}')` : `openPreview('${item.path}')`}"
            oncontextmenu="openContextMenu(event, '${item.path}')">
@@ -1580,29 +2069,33 @@ function renderViewport(data) {
           ${getIconSvg(item)}
         </div>
         <div class="title" title="${item.name}">${item.name}</div>
-        <div class="meta">${item.is_dir ? '' : item.size_formatted}</div>
+        ${(isSearch && item.directory) ? `<div class="search-dir-badge" title="${item.directory}">📁 ${item.directory}</div>` : ''}
+        <div class="meta">${item.is_dir ? (item.size_formatted || (state.calcFolderSizes ? 'Calculando...' : 'Pasta')) : item.size_formatted}</div>
       </div>
     `).join('')}</div>`;
   } else {
-    container.innerHTML = `
+    container.innerHTML = searchBannerHtml + `
       <div class="file-list">
         <div class="list-header">
-          <div>Nome</div>
-          <div>Tamanho</div>
-          <div>Modificado</div>
+          <div class="sortable-col" onclick="sortItems('name')">Nome <span class="sort-indicator">${state.sortBy === 'name' ? (state.sortAsc ? '▲' : '▼') : ''}</span></div>
+          <div class="sortable-col" onclick="sortItems('size')">Tamanho <span class="sort-indicator">${state.sortBy === 'size' ? (state.sortAsc ? '▲' : '▼') : ''}</span></div>
+          <div class="sortable-col" onclick="sortItems('modified')">Modificado <span class="sort-indicator">${state.sortBy === 'modified' ? (state.sortAsc ? '▲' : '▼') : ''}</span></div>
           <div></div>
         </div>
-        ${data.items.map((item, i) => `
+        ${items.map((item, i) => `
           <div class="list-row ${state.selected.has(item.path) ? 'selected' : ''}"
-               style="animation-delay: ${i * 0.02}s"
+               style="animation-delay: ${i * 0.015}s"
                onclick="selectItem('${item.path}', event)"
                ondblclick="${item.is_dir ? `navigateTo('${item.path}')` : `openPreview('${item.path}')`}"
                oncontextmenu="openContextMenu(event, '${item.path}')">
             <div class="name-col">
               <span class="icon-wrapper ${item.icon}">${getIconSvg(item)}</span>
-              <span class="name-text">${item.name}</span>
+              <div style="display:flex;flex-direction:column;min-width:0;overflow:hidden">
+                <span class="name-text" title="${item.name}">${item.name}</span>
+                ${(isSearch && item.directory) ? `<span class="search-dir-badge" title="${item.directory}">📁 ${item.directory}</span>` : ''}
+              </div>
             </div>
-            <div class="size-col">${item.is_dir ? '' : item.size_formatted}</div>
+            <div class="size-col">${item.is_dir ? (item.size_formatted || (state.calcFolderSizes ? 'Calculando...' : '—')) : item.size_formatted}</div>
             <div class="date-col">${formatDate(item.modified)}</div>
             <div></div>
           </div>
@@ -1659,6 +2152,11 @@ function renderBreadcrumbs(crumbs) {
 
 function navigateTo(path) {
   state.searchQuery = '';
+  state.isSearching = false;
+  const input = document.getElementById('searchInput');
+  if (input) input.value = '';
+  const clearBtn = document.getElementById('searchClearBtn');
+  if (clearBtn) clearBtn.style.display = 'none';
   loadFiles(path);
 }
 
@@ -1721,10 +2219,85 @@ function setView(mode) {
 let searchTimer;
 function handleSearch(val) {
   clearTimeout(searchTimer);
+  const q = val.trim();
+  const clearBtn = document.getElementById('searchClearBtn');
+  if (clearBtn) clearBtn.style.display = q ? 'flex' : 'none';
+
+  if (!q) {
+    if (state.isSearching) {
+      clearSearch();
+    }
+    return;
+  }
+
   searchTimer = setTimeout(() => {
-    state.searchQuery = val;
-    loadFiles(state.currentPath);
-  }, 300);
+    executeSearch(q);
+  }, 280);
+}
+
+function toggleSearchScope(evt) {
+  if (evt) evt.stopPropagation();
+  state.searchRecursive = !state.searchRecursive;
+  const scopeText = document.getElementById('searchScopeText');
+  const scopeBtn = document.getElementById('searchScopeBtn');
+  if (scopeText) scopeText.textContent = state.searchRecursive ? 'Recursivo' : 'Nesta pasta';
+  if (scopeBtn) scopeBtn.classList.toggle('active', state.searchRecursive);
+  
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput && searchInput.value.trim()) {
+    executeSearch(searchInput.value.trim());
+  }
+}
+
+async function executeSearch(query) {
+  state.searchQuery = query;
+  state.isSearching = true;
+  state.selected.clear();
+
+  const container = document.getElementById('fileContainer');
+  container.innerHTML = '<div class="empty-view"><p>Pesquisando arquivos...</p></div>';
+
+  try {
+    const params = new URLSearchParams({
+      query: query,
+      path: state.currentPath,
+      recursive: state.searchRecursive ? 'true' : 'false'
+    });
+    if (state.searchFilter && state.searchFilter !== 'all') {
+      params.set('file_type', state.searchFilter);
+    }
+    const data = await fetchApi('GET', '/files/search?' + params);
+    state.items = data.items || [];
+    applySortAndRender();
+  } catch (e) {
+    container.innerHTML = `<div class="empty-view"><h3 style="color:var(--system-red)">Erro na pesquisa</h3><p>${e.message}</p></div>`;
+  }
+}
+
+function setSearchFilter(type) {
+  state.searchFilter = type;
+  if (state.searchQuery) {
+    executeSearch(state.searchQuery);
+  }
+}
+
+function clearSearch() {
+  state.searchQuery = '';
+  state.isSearching = false;
+  state.searchFilter = 'all';
+  const input = document.getElementById('searchInput');
+  if (input) input.value = '';
+  const clearBtn = document.getElementById('searchClearBtn');
+  if (clearBtn) clearBtn.style.display = 'none';
+  loadFiles(state.currentPath);
+}
+
+async function toggleFolderSizes() {
+  state.calcFolderSizes = !state.calcFolderSizes;
+  const btn = document.getElementById('btnFolderSizes');
+  if (btn) btn.classList.toggle('active', state.calcFolderSizes);
+  toast(state.calcFolderSizes ? 'Calculando tamanhos das pastas...' : 'Tamanhos de pastas ocultados');
+  loadFiles(state.currentPath);
 }
 
 
@@ -1748,12 +2321,22 @@ function openContextMenu(e, path) {
   } else {
     extractBtn.style.display = 'none';
   }
+
+  // Mostrar na pasta (durante busca)
+  const showInFolderBtn = document.getElementById('menuShowInFolder');
+  const clickedItem = state.items.find(i => i.path === path);
+  if (showInFolderBtn) {
+    if (state.isSearching && clickedItem && clickedItem.directory) {
+      showInFolderBtn.style.display = 'flex';
+    } else {
+      showInFolderBtn.style.display = 'none';
+    }
+  }
   
   // Calculate position to prevent menu going off-screen
   let x = e.clientX;
   let y = e.clientY;
   
-  // Add a slight delay to get accurate dimensions if it's the first time
   menu.style.display = 'flex';
   menu.style.opacity = '0';
   
@@ -1845,6 +2428,21 @@ function triggerAction(action) {
     createShareLink(path);
   } else if (action === 'extract') {
     extractZip(path);
+  } else if (action === 'show-in-folder') {
+    const item = state.items.find(i => i.path === path);
+    if (item && item.directory) {
+      state.isSearching = false;
+      const searchInput = document.getElementById('searchInput');
+      if (searchInput) searchInput.value = '';
+      const clearBtn = document.getElementById('searchClearBtn');
+      if (clearBtn) clearBtn.style.display = 'none';
+      
+      loadFiles(item.directory).then(() => {
+        state.selected.clear();
+        state.selected.add(item.path);
+        renderViewport({ items: state.items });
+      });
+    }
   }
 }
 
@@ -2185,6 +2783,254 @@ async function loadStorage() {
     document.getElementById('storageLabel').textContent = `${data.used_formatted} / ${data.total_formatted}`;
     document.getElementById('storageMeter').style.width = Math.min(data.percent_used, 100) + '%';
   } catch (e) {}
+}
+
+let currentAnalyzerPath = '/';
+let currentAnalyzerTab = 'folders';
+let analyzerData = null;
+
+async function openStorageAnalyzer(targetPath = null) {
+  if (!targetPath) {
+    targetPath = state.currentPath || '/workspace';
+  }
+  currentAnalyzerPath = targetPath;
+  
+  showModal(`
+    <div class="analyzer-modal">
+      <div class="modal-header" style="padding-bottom:12px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <svg class="svg-icon lg" style="color:var(--accent)" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+          <div>
+            <h3 style="font-size:18px">Analisador de Espaço em Disco</h3>
+            <p style="font-size:12px;color:var(--text-secondary);margin:0">Descubra com precisão qual pasta está consumindo mais espaço</p>
+          </div>
+        </div>
+        <button class="btn-icon-soft" onclick="closeModal()" title="Fechar">✕</button>
+      </div>
+
+      <div class="modal-body" style="padding:16px 24px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:12px;color:var(--text-tertiary);font-weight:600">ANALISANDO:</span>
+            <button class="filter-chip ${currentAnalyzerPath === state.currentPath ? 'active' : ''}" onclick="openStorageAnalyzer('${state.currentPath}')">Pasta Atual (${state.currentPath})</button>
+            <button class="filter-chip ${currentAnalyzerPath === '/workspace' ? 'active' : ''}" onclick="openStorageAnalyzer('/workspace')">Workspace</button>
+            <button class="filter-chip ${currentAnalyzerPath === '/' ? 'active' : ''}" onclick="openStorageAnalyzer('/')">Raiz / Sistema</button>
+          </div>
+          <button class="btn-icon-soft" onclick="openStorageAnalyzer('${currentAnalyzerPath}')" title="Atualizar Análise" style="font-size:12px;padding:6px 12px;display:flex;align-items:center;gap:6px">
+            <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+            <span>Recalcular</span>
+          </button>
+        </div>
+
+        <div id="analyzerContent">
+          <div class="empty-view" style="padding:40px 0">
+            <svg class="svg-icon xl" style="color:var(--accent);animation:pulseGlow 1.5s linear infinite" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <h4 style="margin-top:12px;font-size:15px">Calculando uso de espaço e ranking das pastas...</h4>
+          </div>
+        </div>
+      </div>
+    </div>
+  `);
+
+  try {
+    const data = await fetchApi('GET', `/storage/breakdown?path=${encodeURIComponent(currentAnalyzerPath)}`);
+    analyzerData = data;
+    renderAnalyzerBody();
+  } catch (err) {
+    const content = document.getElementById('analyzerContent');
+    if (content) {
+      content.innerHTML = `
+        <div class="empty-view" style="padding:30px 0">
+          <h4 style="color:var(--system-red);margin-bottom:8px">Erro ao analisar disco</h4>
+          <p style="font-size:13px">${err.message}</p>
+        </div>
+      `;
+    }
+  }
+}
+
+function renderAnalyzerBody() {
+  if (!analyzerData) return;
+  const d = analyzerData;
+  const container = document.getElementById('analyzerContent');
+  if (!container) return;
+
+  const heaviest = d.heaviest_folder;
+
+  let heaviestHtml = '';
+  if (heaviest && heaviest.size > 0) {
+    heaviestHtml = `
+      <div class="heaviest-spotlight">
+        <div>
+          <div class="heaviest-badge">
+            🏆 Pasta que mais ocupa espaço
+          </div>
+          <div class="heaviest-title">
+            <svg class="svg-icon lg" style="color:#f59e0b" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+            <span>${heaviest.name}</span>
+          </div>
+          <div class="heaviest-path">${heaviest.path}</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:6px">
+            Contém ${heaviest.files_count || 0} arquivos e ${heaviest.dirs_count || 0} subpastas
+          </div>
+        </div>
+        <div class="heaviest-stat">
+          <div class="heaviest-size">${heaviest.size_formatted}</div>
+          <div class="heaviest-percent">${heaviest.percent}% do total analisado</div>
+          <button class="btn-primary-sm" style="margin-top:10px;padding:6px 14px;font-size:12px" onclick="closeModal();navigateTo('${heaviest.path}')">
+            Abrir Pasta
+          </button>
+        </div>
+      </div>
+    `;
+  } else {
+    heaviestHtml = `
+      <div class="heaviest-spotlight" style="background:rgba(255,255,255,0.03);border-color:var(--border)">
+        <div>
+          <div class="heaviest-title">Diretório Vazio ou Sem Pastas Pesadas</div>
+          <div class="heaviest-path">${d.analyzed_path}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  const statsHtml = `
+    <div class="analyzer-stats-grid">
+      <div class="analyzer-stat-card">
+        <span class="label">Conteúdo Analisado</span>
+        <span class="val">${d.total_content_size_formatted}</span>
+      </div>
+      <div class="analyzer-stat-card">
+        <span class="label">Subpastas Encontradas</span>
+        <span class="val">${d.direct_folders_count}</span>
+      </div>
+      <div class="analyzer-stat-card">
+        <span class="label">Arquivos Diretos</span>
+        <span class="val">${d.direct_files_count} (${d.direct_files_size_formatted})</span>
+      </div>
+      <div class="analyzer-stat-card">
+        <span class="label">Espaço Livre no Disco</span>
+        <span class="val" style="color:var(--system-green)">${d.disk_free_formatted}</span>
+      </div>
+    </div>
+  `;
+
+  const tabsHtml = `
+    <div class="analyzer-tabs">
+      <button class="analyzer-tab-btn ${currentAnalyzerTab === 'folders' ? 'active' : ''}" onclick="switchAnalyzerTab('folders')">
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+        <span>Pastas neste Diretório (${d.folders.length})</span>
+      </button>
+      <button class="analyzer-tab-btn ${currentAnalyzerTab === 'top_folders' ? 'active' : ''}" onclick="switchAnalyzerTab('top_folders')">
+        <svg class="svg-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        <span>🔥 Top 10 Maiores Pastas (Geral)</span>
+      </button>
+      <button class="analyzer-tab-btn ${currentAnalyzerTab === 'top_files' ? 'active' : ''}" onclick="switchAnalyzerTab('top_files')">
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
+        <span>📄 Top 10 Maiores Arquivos</span>
+      </button>
+    </div>
+  `;
+
+  let listHtml = '';
+  if (currentAnalyzerTab === 'folders') {
+    if (!d.folders || d.folders.length === 0) {
+      listHtml = '<div class="empty-view" style="padding:20px 0"><p>Nenhuma subpasta neste diretório.</p></div>';
+    } else {
+      listHtml = `<div class="analyzer-list">` + d.folders.map((f, idx) => {
+        const rankClass = idx === 0 ? 'gold' : (idx === 1 ? 'silver' : (idx === 2 ? 'bronze' : ''));
+        const medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `#${idx + 1}`));
+        const isHeavy = f.percent >= 40;
+        return `
+          <div class="analyzer-row">
+            <div class="analyzer-rank ${rankClass}">${medal}</div>
+            <div class="analyzer-row-info">
+              <div class="analyzer-row-name">
+                <svg class="svg-icon" style="color:#3b82f6" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                <span title="${f.name}">${f.name}</span>
+                ${f.is_heaviest ? '<span style="font-size:10px;padding:2px 6px;border-radius:99px;background:rgba(245,158,11,0.2);color:#fbbf24;font-weight:700">MAIOR</span>' : ''}
+              </div>
+              <div class="analyzer-row-sub">${f.path} • ${f.files_count || 0} arquivos</div>
+            </div>
+            <div class="analyzer-bar-col">
+              <div class="analyzer-mini-bar">
+                <div class="analyzer-mini-bar-fill ${isHeavy ? 'heavy' : ''}" style="width: ${Math.max(f.percent, 3)}%"></div>
+              </div>
+              <span class="analyzer-bar-percent">${f.percent}%</span>
+            </div>
+            <div class="analyzer-row-size">${f.size_formatted}</div>
+            <div class="analyzer-row-action">
+              <button onclick="closeModal();navigateTo('${f.path}')">Abrir</button>
+            </div>
+          </div>
+        `;
+      }).join('') + `</div>`;
+    }
+  } else if (currentAnalyzerTab === 'top_folders') {
+    if (!d.top_folders || d.top_folders.length === 0) {
+      listHtml = '<div class="empty-view" style="padding:20px 0"><p>Nenhuma pasta encontrada.</p></div>';
+    } else {
+      const maxTopSize = d.top_folders[0]?.size || 1;
+      listHtml = `<div class="analyzer-list">` + d.top_folders.map((f, idx) => {
+        const medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `#${idx + 1}`));
+        const percentRel = Math.round((f.size / maxTopSize) * 100);
+        return `
+          <div class="analyzer-row">
+            <div class="analyzer-rank">${medal}</div>
+            <div class="analyzer-row-info">
+              <div class="analyzer-row-name">
+                <svg class="svg-icon" style="color:#3b82f6" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                <span title="${f.name}">${f.name}</span>
+              </div>
+              <div class="analyzer-row-sub">${f.path} • ${f.files_count || 0} arquivos</div>
+            </div>
+            <div class="analyzer-bar-col">
+              <div class="analyzer-mini-bar">
+                <div class="analyzer-mini-bar-fill" style="width: ${Math.max(percentRel, 3)}%"></div>
+              </div>
+              <span class="analyzer-bar-percent">${percentRel}% do maior</span>
+            </div>
+            <div class="analyzer-row-size">${f.size_formatted}</div>
+            <div class="analyzer-row-action">
+              <button onclick="closeModal();navigateTo('${f.path}')">Abrir</button>
+            </div>
+          </div>
+        `;
+      }).join('') + `</div>`;
+    }
+  } else if (currentAnalyzerTab === 'top_files') {
+    if (!d.top_files || d.top_files.length === 0) {
+      listHtml = '<div class="empty-view" style="padding:20px 0"><p>Nenhum arquivo encontrado.</p></div>';
+    } else {
+      listHtml = `<div class="analyzer-list">` + d.top_files.map((file, idx) => {
+        const medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `#${idx + 1}`));
+        return `
+          <div class="analyzer-row">
+            <div class="analyzer-rank">${medal}</div>
+            <div class="analyzer-row-info">
+              <div class="analyzer-row-name">
+                <span class="icon-wrapper ${file.icon}">${getIconSvg(file)}</span>
+                <span title="${file.name}">${file.name}</span>
+              </div>
+              <div class="analyzer-row-sub">${file.path}</div>
+            </div>
+            <div></div>
+            <div class="analyzer-row-size">${file.size_formatted}</div>
+            <div class="analyzer-row-action">
+              <button onclick="closeModal();openPreview('${file.path}')">Ver</button>
+            </div>
+          </div>
+        `;
+      }).join('') + `</div>`;
+    }
+  }
+
+  container.innerHTML = heaviestHtml + statsHtml + tabsHtml + listHtml;
+}
+
+function switchAnalyzerTab(tab) {
+  currentAnalyzerTab = tab;
+  renderAnalyzerBody();
 }
 
 

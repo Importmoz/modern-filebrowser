@@ -15,11 +15,11 @@
 | 📥 **Download** | Arquivo único ou pasta em ZIP |
 | ✏️ **Editor** | Visualize e edite arquivos de texto no navegador |
 | 🖼️ **Preview** | Imagens, vídeos, áudio, PDF |
-| 🔍 **Busca** | Filtro instantâneo por nome |
+| 🔍 **Busca Avançada** | Busca recursiva instantânea em subpastas com filtros por tipo (pastas, imagens, documentos, código, zips) |
 | 📋 **Copiar/Mover** | Ctrl+C / Ctrl+V entre pastas |
 | 🗑️ **Lixeira** | Recupere arquivos excluídos |
 | 👥 **Multi-usuário** | Admin e usuários com escopo |
-| 📊 **Armazenamento** | Barra de uso do disco |
+| 📊 **Analisador de Espaço** | Diagnóstico visual completo de disco: veja exatamente qual pasta está ocupando mais espaço, ranking Top 10 e maiores arquivos |
 | 📱 **Responsivo** | Funciona em desktop e mobile |
 | 🇧🇷 **PT-BR** | Interface completa em português |
 
